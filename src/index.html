@@ -8,5 +8,16 @@
 </head>
 <body>
     <div class="video-container"></div>
+    <script type="text/javascript">
+        new HTML5Wrapper($('.video-container'), {
+            sources: ['video.mp4', 'video.webm'],
+            volume: 0.5,
+            playbackRate: 1.0,
+            autoplay: true,
+            controls: true,
+            loop: true,
+            muted: true,
+        });
+    </script>
 </body>
 </html>

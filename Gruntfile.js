@@ -54,7 +54,7 @@ module.exports = function(grunt) {
     // }
 
   grunt.loadNpmTasks('grunt-contrib-uglify');
-    // https://npmjs.org/package/grunt-contrib-jshint
+  // https://npmjs.org/package/grunt-contrib-jshint
   // grunt.loadNpmTasks('grunt-contrib-jshint');
   // https://npmjs.org/package/grunt-contrib-jasmine
   grunt.loadNpmTasks('grunt-contrib-jasmine');
