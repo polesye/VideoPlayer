@@ -4,20 +4,108 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <title>Video Player</title>
-        <script type="text/javascript" src="../build/VideoPlayer.min.js"></script>
+        <!--script type="text/javascript" src="../build/VideoPlayer.min.js"></script-->
+        <script type="text/javascript" src="js/1.7.2.jquery.min.js"></script>
+        <script type="text/javascript" src="js/edX_player.js"></script>
+        <script type="text/javascript" src="js/html5.js"></script>
+        <script type="text/javascript" src="js/youtube.js"></script>
 </head>
 <body>
-    <div class="video-container"></div>
+    <div id="video-container"></div>
+    <div id="youtube-video-container"></div>
+
+    <div>State: <span class="state"></span></div>
+    <div>Current time/ Duration: <span class="time"></span>/<span class="duration"></span></div>
+    <div>Speed: <span class="speed"></span></div>
+    <div>Muted: <span class="mute"></span></div>
+    <div>Volume level: <span class="volume"></span></div>
+    <div>Quality: <span class="quality"></span></div>
+    <hr />
+    <div>Events: <span class="events"></span></div>
+
+
+
     <script type="text/javascript">
-        new HTML5Wrapper($('.video-container'), {
-            sources: ['video.mp4', 'video.webm'],
-            volume: 0.5,
-            playbackRate: 1.0,
-            autoplay: true,
-            controls: true,
-            loop: true,
-            muted: true,
-        });
+        // new HTML5Wrapper($('#video-container'), {
+        //     sources: [
+        //         'https://s3.amazonaws.com/edx-course-videos/edx-intro/edX-FA12-cware-1_100.mp4.mp4',
+        //         'https://s3.amazonaws.com/edx-course-videos/edx-intro/edX-FA12-cware-1_100.webm'],
+        //     volume: 0.5,
+        //     playbackRate: 2.0,
+        //     autoplay: false,
+        //     controls: true,
+        //     loop: true,
+        //     muted: true,
+        // });
+    </script>
+
+    <script type="text/javascript">
+
+    p = new YoutubeWrapper($('#youtube-video-container'), {
+        videoId: 'M7lc1UVf-VE',
+        volume: 0.75,
+        playbackRate: 2.0,
+        autoplay: 0,
+        controls: 1,
+        loop: 1,
+        muted: false,
+    });
+
+
+
+    var d = document.getElementById('youtube-video-container');
+
+    var updateEvent = function (event) {
+        $('.events').append('<div>' + event + '</div>')
+    };
+
+    d.addEventListener('timeupdate', function () {
+        $('.time').html(p.currentTime);
+    });
+    d.addEventListener('durationchange', function () {
+        $('.duration').html(p.duration);
+    });
+    d.addEventListener('volumechange', function () {
+        $('.volume').html(p.volume);
+    });
+    d.addEventListener('volumechange', function () {
+        $('.mute').html(p.muted.toString());
+    });
+    d.addEventListener('ratechange', function () {
+        $('.speed').html(p.playbackRate);
+    });
+    d.addEventListener('qualitychange', function () {
+        $('.quality').html(p.playbackQuality);
+    });
+
+    d.addEventListener('canplay', function () {
+        updateEvent('canplay');
+    });
+    d.addEventListener('loadedmetadata', function () {
+        updateEvent('loadedmetadata');
+    });
+    d.addEventListener('loadeddata', function () {
+        updateEvent('loadeddata');
+    });
+    d.addEventListener('durationchange', function () {
+        updateEvent('durationchange');
+    });
+    d.addEventListener('ended', function () {
+        updateEvent('ended');
+    });
+    d.addEventListener('play', function () {
+        updateEvent('play');
+    });
+    d.addEventListener('playing', function () {
+        updateEvent('playing');
+    });
+    d.addEventListener('pause', function () {
+        updateEvent('pause');
+    });
+    d.addEventListener('progress', function () {
+        updateEvent('progress');
+    });
+
     </script>
 </body>
 </html>

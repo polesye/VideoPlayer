@@ -95,10 +95,34 @@ describe('HTML5Video:', function () {
     it('getPlayerState', function () {
         var player = getPlayer(),
             state = player.getPlayerState(),
-            expected = 0;
+            expected = -1;
 
         expect(state).toEqual(expected);
     });
+
+    describe('getVideoType', function () {
+        it('supported file type', function () {
+            var player = getPlayer(null, {
+                    sources: ['http://www.example.org/video.webm?param1=val']
+                }),
+                type = player.getVideoType('http://www.example.org/video.webm?param1=val'),
+                expected = 'video/webm';
+
+            expect(type).toEqual(expected);
+            expect(player.$media.find('source').length).toBe(1);
+        });
+        it('unsupported file type', function () {
+            var player = getPlayer(null, {
+                    sources: ['http://www.example.org/video.mp3']
+                }),
+                type = player.getVideoType('http://www.example.org/video.mp3'),
+                expected = null;
+
+            expect(type).toEqual(expected);
+            expect(player.$media.find('source').length).toBe(0);
+        });
+    });
+
 
     describe('initialize', function () {
         it('properties', function () {

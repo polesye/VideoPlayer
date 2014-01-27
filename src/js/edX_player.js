@@ -15,7 +15,7 @@
                     .split('<').join('&lt;')
                     .split('"').join('&quot;');
         },
-        secondsToTimeCode: function(time, forceHours) {
+        secondsToTimecode: function(time, forceHours) {
             var hours = Math.floor(time / 3600) % 24,
                 minutes = Math.floor(time / 60) % 60,
                 seconds = Math.floor(time % 60),
@@ -28,7 +28,7 @@
 
             return result;
         },
-        timeCodeToSeconds: function(hhmmss){
+        timecodeToSeconds: function(hhmmss){
             var array = hhmmss.split(":"),
                 hours = parseInt(array[0], 10),
                 minutes = parseInt(array[1], 10),

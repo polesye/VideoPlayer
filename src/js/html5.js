@@ -1,3 +1,15 @@
+// state = {
+//     unstarted: -1,// init player
+//     ended: 0,
+//     playing: 1,
+//     paused: 2,
+//     buffering: 3,
+//     video cued: 5 // canplay
+// }
+// When the player first loads a video, it will broadcast an unstarted (-1) event.
+// When a video is cued and ready to play, the player will broadcast a video
+// cued (5) event.
+
 ;(function (global, undefined) {
     "use strict";
     var HTML5Wrapper = function (container, options) {
@@ -8,10 +20,11 @@
     HTML5Wrapper.prototype = {
 
         initialize: function (container, config) {
-            var defaults = {
-                    availablePlaybackRates: [0.5, 1.0, 1.5, 2.0],
+            var self = this,
+                defaults = {
                     // List of video sources.
-                    sources: []
+                    sources: [],
+                    supportedFormats: ['mp4', 'webm', 'ogv']
                 },
                 defaultProperties = {
                     // {float} Gets the current volume as a value between 0.0 and 1.0
@@ -29,6 +42,8 @@
                     loop: false,
                     // {boolean} Gets or sets if the media is muted.
                     muted: false,
+                    height: 240,
+                    width: 400,
                 },
                 options = $.extend({}, config),
                 properties = {};
@@ -42,34 +57,41 @@
 
             $.extend(this, {
                 options: $.extend({}, defaults, options),
-                // {float} The number of seconds that have been played.
                 currentTime: 0,
-                // {float} The total number of seconds for the media
                 duration: 0,
-                // {boolean} Indicates if the player is paused.
-                paused: false,
-                // {boolean} Indicates if the media has completely played.
+                paused: true,
                 ended: false,
-                state: 0
+                state: -1
             }, defaultProperties, properties);
 
             this.build.call(this, container);
+
+            $.each(properties, function(property, value) {
+                self.media[property] = value;
+            });
 
             return this;
         },
         build: function (container) {
             var self = this,
                 media = document.createElement('video'),
+                text = document.createTextNode('Your user agent does not support the HTML5 Video element.'),
                 sourcesFragment = document.createDocumentFragment();
 
             // Generate sources.
             $.each(this.options.sources, function(index, src) {
-                var source = document.createElement('source');
-                source.src = src + '?' + (new Date()).getTime();
-                source.type = self.getVideoType(src);
-                sourcesFragment.appendChild(source);
+                var type = self.getVideoType(src),
+                    source;
+
+                if (type) {
+                    source = document.createElement('source');
+                    source.src = src + '?' + (new Date()).getTime();
+                    source.type = self.getVideoType(src);
+                    sourcesFragment.appendChild(source);
+                }
             });
 
+            sourcesFragment.appendChild(text);
             media.appendChild(sourcesFragment);
 
             // Append video element to the DOM.
@@ -78,7 +100,7 @@
             this.$media = $(media);
             this.media = media;
 
-            return this;
+            return this.media;
         },
         destroy: function () {
             this.$media.remove();
@@ -111,16 +133,17 @@
             this.media.playbackRate = this.playbackRate = suggestedRate;
         },
         getAvailablePlaybackRates: function () {
-            return this.options.availablePlaybackRates;
+            return [0.5, 1.0, 1.5, 2.0];
         },
         getPlayerState: function () {
             return this.state;
         },
         getVideoType: function (src) {
             var url = src.split('?')[0],
-                ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
+                ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase(),
+                formats = this.options.supportedFormats;
 
-            return 'video/' + ext;
+            return $.inArray(ext, formats) !== -1 ? 'video/' + ext : null;
         }
     };
 
