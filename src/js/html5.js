@@ -12,19 +12,18 @@
 
 ;(function (global, undefined) {
     "use strict";
-    var HTML5Wrapper = function (container, options) {
+    var HTML5 = function (container, options) {
 
         this.initialize.apply(this, arguments);
     };
 
-    HTML5Wrapper.prototype = {
+    HTML5.prototype = {
 
         initialize: function (container, config) {
             var self = this,
                 defaults = {
                     // List of video sources.
-                    sources: [],
-                    supportedFormats: ['mp4', 'webm', 'ogv']
+                    sources: []
                 },
                 defaultProperties = {
                     // {float} Gets the current volume as a value between 0.0 and 1.0
@@ -97,13 +96,12 @@
             // Append video element to the DOM.
             container.append(media);
 
-            this.$media = $(media);
-            this.media = media;
+            this.media = this.element = media;
 
             return this.media;
         },
         destroy: function () {
-            this.$media.remove();
+            $(this.element).remove();
 
             return this;
         },
@@ -141,11 +139,11 @@
         getVideoType: function (src) {
             var url = src.split('?')[0],
                 ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase(),
-                formats = this.options.supportedFormats;
+                formats = ['mp4', 'webm', 'ogv'];
 
             return $.inArray(ext, formats) !== -1 ? 'video/' + ext : null;
         }
     };
 
-    window.HTML5Wrapper = HTML5Wrapper;
+    s2js.API['HTML5'] = HTML5;
 }(this));

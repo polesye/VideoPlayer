@@ -12,7 +12,7 @@ describe('HTML5Video:', function () {
             };
         }
 
-        player = new HTML5Wrapper(container, options);
+        player = new s2js.API['HTML5'](container, options);
         player.media = jasmine.createSpyObj('video', ['play', 'pause']);
 
         return player;
@@ -20,7 +20,7 @@ describe('HTML5Video:', function () {
 
     it('build', function () {
         var player = getPlayer(),
-            video = player.$media;
+            video = $(player.element);
 
         expect(video.length).toEqual(1);
         expect(video.find('source').get(0).type).toBe('video/mp4');
@@ -109,7 +109,7 @@ describe('HTML5Video:', function () {
                 expected = 'video/webm';
 
             expect(type).toEqual(expected);
-            expect(player.$media.find('source').length).toBe(1);
+            expect($(player.element).find('source').length).toBe(1);
         });
         it('unsupported file type', function () {
             var player = getPlayer(null, {
@@ -119,7 +119,7 @@ describe('HTML5Video:', function () {
                 expected = null;
 
             expect(type).toEqual(expected);
-            expect(player.$media.find('source').length).toBe(0);
+            expect($(player.element).find('source').length).toBe(0);
         });
     });
 

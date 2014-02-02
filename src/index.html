@@ -21,12 +21,12 @@
     <div>Volume level: <span class="volume"></span></div>
     <div>Quality: <span class="quality"></span></div>
     <hr />
-    <div>Events: <span class="events"></span></div>
+    <div>Events: <ol class="events"></ol></div>
 
 
 
     <script type="text/javascript">
-        // new HTML5Wrapper($('#video-container'), {
+        // new s2js.wrappers['HTML5Wrapper']($('#video-container'), {
         //     sources: [
         //         'https://s3.amazonaws.com/edx-course-videos/edx-intro/edX-FA12-cware-1_100.mp4.mp4',
         //         'https://s3.amazonaws.com/edx-course-videos/edx-intro/edX-FA12-cware-1_100.webm'],
@@ -41,22 +41,21 @@
 
     <script type="text/javascript">
 
-    p = new YoutubeWrapper($('#youtube-video-container'), {
+    p = new s2js.Video('Youtube', $('#youtube-video-container'), {
         videoId: 'M7lc1UVf-VE',
         volume: 0.75,
         playbackRate: 2.0,
         autoplay: 0,
         controls: 1,
         loop: 1,
-        muted: false,
+        muted: false
     });
-
 
 
     var d = document.getElementById('youtube-video-container');
 
     var updateEvent = function (event) {
-        $('.events').append('<div>' + event + '</div>')
+        $('.events').append('<li>' + event + '</li>')
     };
 
     d.addEventListener('timeupdate', function () {
@@ -78,32 +77,15 @@
         $('.quality').html(p.playbackQuality);
     });
 
-    d.addEventListener('canplay', function () {
-        updateEvent('canplay');
-    });
-    d.addEventListener('loadedmetadata', function () {
-        updateEvent('loadedmetadata');
-    });
-    d.addEventListener('loadeddata', function () {
-        updateEvent('loadeddata');
-    });
-    d.addEventListener('durationchange', function () {
-        updateEvent('durationchange');
-    });
-    d.addEventListener('ended', function () {
-        updateEvent('ended');
-    });
-    d.addEventListener('play', function () {
-        updateEvent('play');
-    });
-    d.addEventListener('playing', function () {
-        updateEvent('playing');
-    });
-    d.addEventListener('pause', function () {
-        updateEvent('pause');
-    });
-    d.addEventListener('progress', function () {
-        updateEvent('progress');
+
+    [
+        'canplay', 'ratechange', 'loadedmetadata', 'loadeddata', 'durationchange',
+        'ended', 'play', 'playing', 'pause', 'progress', 'qualitychange', 'error',
+        'volumechange'
+    ].forEach(function (eventName) {
+        d.addEventListener(eventName, function () {
+            updateEvent(eventName);
+        }, false);
     });
 
     </script>
