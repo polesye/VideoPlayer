@@ -12,7 +12,7 @@
 
 ;(function (global, undefined) {
     "use strict";
-    var initialize = function (videoInstance, container, config) {
+    var initialize = function (videoInstance, element, config) {
         var self = videoInstance,
             defaults = {
                 videoId: '',
@@ -61,11 +61,11 @@
         playerVars = $.extend({}, defaultPlayerVars, playerVars);
 
         window.onYouTubePlayerAPIReady = function () {
-            build.call(null, self, container, playerVars);
+            build.call(null, self, element, playerVars);
         };
 
         loadAPI();
-        self.element = container[0];
+        self.element = element[0];
 
         self.element.addEventListener('canplay', function () {
             if (self.muted) {
@@ -90,13 +90,13 @@
         } (), false);
     };
 
-    var build = function (videoInstance, container, playerVars) {
+    var build = function (videoInstance, element, playerVars) {
         var self = videoInstance,
-            containerId = container.attr('id');
+            elementId = element.attr('id');
 
         s2js.Utils.fireEvent(self.element, 'loadstart');
 
-        self.media = new YT.Player(containerId, {
+        self.media = new YT.Player(elementId, {
             height: '390',
             width: '640',
             videoId: self.options.videoId,
@@ -200,8 +200,8 @@
     };
 
 
-    var Youtube = function (container, options) {
-        initialize.apply(self, [].concat.apply(this, arguments));
+    var Youtube = function (element, options) {
+        initialize.apply(self, Array.prototype.concat.apply(this, arguments));
     };
 
     Youtube.prototype = {
@@ -226,14 +226,12 @@
         mute: function () {
             if (this.media) {
                 this.media.mute();
-                this.muted = true;
             }
             return this;
         },
         unMute: function () {
             if (this.media) {
                 this.media.unMute();
-                this.muted = false;
             }
             return this;
         },

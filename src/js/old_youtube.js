@@ -288,5 +288,5 @@
 
     };
 
-    s2js.wrappers['YoutubeWrapper_'] = YoutubeWrapper;
+    s2js.API['YoutubeWrapper_'] = YoutubeWrapper;
 }(this));

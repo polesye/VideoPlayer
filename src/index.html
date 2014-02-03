@@ -9,19 +9,37 @@
         <script type="text/javascript" src="js/edX_player.js"></script>
         <script type="text/javascript" src="js/html5.js"></script>
         <script type="text/javascript" src="js/youtube.js"></script>
+        <style type="text/css">
+            .video-holder {
+                display: block;
+            }
+            .s2js-button {
+                display: inline-block;
+                padding: 5px 10px;
+                margin: 10px 2px;
+                border: 1px solid #000;
+                text-decoration: none;
+                color: #000;
+            }
+            .s2js-button-active {
+                border-color: red;
+                color: red;
+            }
+        </style>
 </head>
 <body>
+    <div style="float:right; padding: 10px;">Events: <ol class="events" style="height: 390px; overflow: scroll;"></ol></div>
+
     <div id="video-container"></div>
     <div id="youtube-video-container"></div>
 
-    <div>State: <span class="state"></span></div>
+    <hr />
+
     <div>Current time/ Duration: <span class="time"></span>/<span class="duration"></span></div>
     <div>Speed: <span class="speed"></span></div>
     <div>Muted: <span class="mute"></span></div>
     <div>Volume level: <span class="volume"></span></div>
     <div>Quality: <span class="quality"></span></div>
-    <hr />
-    <div>Events: <ol class="events"></ol></div>
 
 
 
@@ -51,18 +69,17 @@
         muted: false
     });
 
-
-    var d = document.getElementById('youtube-video-container');
+    var d = document.getElementById('s2js-player-0');
 
     var updateEvent = function (event) {
         $('.events').append('<li>' + event + '</li>')
     };
 
     d.addEventListener('timeupdate', function () {
-        $('.time').html(p.currentTime);
+        $('.time').html(s2js.Utils.secondsToTimecode(p.currentTime));
     });
     d.addEventListener('durationchange', function () {
-        $('.duration').html(p.duration);
+        $('.duration').html(s2js.Utils.secondsToTimecode(p.duration));
     });
     d.addEventListener('volumechange', function () {
         $('.volume').html(p.volume);

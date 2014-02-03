@@ -3,6 +3,8 @@
 
     s2js.API = {};
 
+    s2js.playerIndex = 0;
+
     s2js.Utils = {
         printf: function (format) {
             var args = Array.prototype.slice.call(arguments, 1);
@@ -47,7 +49,7 @@
                 event = document.CustomEvent(eventName, {"detail": data});
             } else if (document.createEvent) {
                 event = document.createEvent('HTMLEvents');
-                event.initEvent(eventName, true, true);
+                event.initEvent(eventName, true, true, data);
             } else {
                 event = document.createEventObject();
                 event.eventType = eventName;
@@ -70,14 +72,28 @@
 
     s2js.Video.prototype = {
         initialize: function (type, element, options) {
+            var slice = Array.prototype.slice,
+                videoHolder = this.build.apply(this, slice.call(arguments, 1));
+
             if (typeof s2js.API[type] !== "function") {
                 throw new TypeError(type + ' is not a function.');
             }
 
-            this.media = new s2js.API[type](element, options);
+            this.media = new s2js.API[type](videoHolder, options);
             this.initializePlugins();
+            s2js.playerIndex += 1;
 
             return this.media;
+        },
+        build: function (element, options) {
+            var videoHolder = $('<div class="video-holder" />');
+
+            $(element).addClass('s2js-player');
+            videoHolder
+                .attr('id', 's2js-player-' + s2js.playerIndex)
+                .appendTo(element);
+
+            return videoHolder;
         },
 
         initializePlugins: function () {
@@ -95,7 +111,6 @@
     };
 
 
-
     s2js.Component = {
         extend: function (protoProps, staticProps) {
             var Parent = this,
@@ -107,16 +122,17 @@
                 Child = function () { return Parent.apply(this, arguments); };
             }
 
-            $.extend(true, Child, staticProps);
+            $.extend(Child, Parent, staticProps);
 
             // inherit
             var F = function () {};
             F.prototype = Parent.prototype;
             Child.prototype = new F();
+            Child.constructor = Parent;
             Child.__super__ = Parent.prototype;
 
             if (protoProps) {
-                $.extend(true, Child.prototype, protoProps);
+                $.extend(Child.prototype, protoProps);
             }
 
             return Child;
@@ -124,45 +140,65 @@
     };
 
     s2js.Button = s2js.Component.extend({
-        className: 's2js-button',
+        className: 's2js-button-play',
+        classNameDefault: 's2js-button',
         classNameActive: 's2js-button-active',
-        title: ['Play button', 'Pause button'],
+        titles: {
+            normal: 'button',
+            active: 'button active'
+        },
+        stateCallbacks: {
+            normal: null,
+            active: null
+        },
         initialize: function (player, media) {
             this.player = player;
             this.media = media;
             this.element = this.build.apply(this, arguments);
 
-            this.element.addEventListener('click', this.onClick.bind(this), false);
+            this.element.on('click', this.onClickHandler.bind(this));
         },
         build: function (player, media) {
             var container = player.element,
-                button = document.createElement('a');
+                button = $('<a href="#"></a>');
 
-            button.setAttribute('role', 'button');
-            button.href = '#';
-            button.title = this.title[0];
-            button.innerHTML = this.title[0];
-            button.className = this.className;
-
-            container.parentNode.appendChild(button);
+            button
+                .attr({
+                    role: 'button',
+                    title: this.titles.normal
+                })
+                .addClass(this.classNameDefault)
+                .addClass(this.className)
+                .text(this.titles.normal)
+                .appendTo(container);
 
             return button;
         },
-        onClick: function (event) {
+        onClickHandler: function (event) {
             this.toggleState();
 
             event.preventDefault();
         },
         toggleState: function () {
             var el = this.element;
-            if (el.classList.contains(this.classNameActive)) {
-                el.classList.remove(this.classNameActive);
-                el.innerHTML = el.title = this.title[0];
-                this.media.pause();
+            if (el.hasClass(this.classNameActive)) {
+                el
+                    .removeClass(this.classNameActive)
+                    .attr('title', this.titles.normal)
+                    .text(this.titles.normal);
+
+                if ($.isFunction(this.stateCallbacks.normal)) {
+                    this.stateCallbacks.normal.call(this);
+                }
             } else {
-                el.classList.add(this.classNameActive);
-                el.innerHTML = el.title = this.title[1];
-                this.media.play();
+                el
+                    .addClass(this.classNameActive)
+                    .attr('title', this.titles.active)
+                    .text(this.titles.active);
+
+                if ($.isFunction(this.stateCallbacks.active)) {
+                    this.stateCallbacks.active.call(this);
+                }
             }
         }
     });
@@ -174,7 +210,43 @@
 
 
 
+// ========================================================================== //
 
-    s2js.Video.plugins = [s2js.Button];
+
+
+    s2js.PlayButton = s2js.Button.extend({
+        className: 's2js-button-play',
+        titles: {
+            normal: 'Play',
+            active: 'Pause'
+        },
+        stateCallbacks: {
+            normal: function () {
+                this.media.pause();
+            },
+            active: function () {
+                this.media.play();
+            }
+        }
+    });
+
+    s2js.MuteButton = s2js.Button.extend({
+        className: 's2js-button-mute',
+        titles: {
+            normal: 'Mute',
+            active: 'unMute'
+        },
+        stateCallbacks: {
+            normal: function () {
+                this.media.unMute();
+            },
+            active: function () {
+                this.media.mute();
+            }
+        }
+    });
+
+
+    s2js.Video.plugins = [s2js.PlayButton, s2js.MuteButton];
 
 }());
