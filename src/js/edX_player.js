@@ -4,6 +4,10 @@
     s2js.API = {};
 
     s2js.playerIndex = 0;
+    s2js.i18n = {
+        t: function (s) { return s; }
+    };
+
 
     s2js.Utils = {
         printf: function (format) {
@@ -140,7 +144,7 @@
     };
 
     s2js.Button = s2js.Component.extend({
-        className: 's2js-button-play',
+        className: '',
         classNameDefault: 's2js-button',
         classNameActive: 's2js-button-active',
         titles: {
@@ -160,16 +164,16 @@
         },
         build: function (player, media) {
             var container = player.element,
-                button = $('<a href="#"></a>');
+                button = $('<a href="#"></a>'),
+                title = s2js.i18n.t(this.titles.normal);
 
             button
                 .attr({
                     role: 'button',
-                    title: this.titles.normal
+                    title: title
                 })
-                .addClass(this.classNameDefault)
-                .addClass(this.className)
-                .text(this.titles.normal)
+                .addClass([this.classNameDefault, this.className].join(' '))
+                .text(title)
                 .appendTo(container);
 
             return button;
@@ -180,28 +184,139 @@
             event.preventDefault();
         },
         toggleState: function () {
-            var el = this.element;
-            if (el.hasClass(this.classNameActive)) {
-                el
-                    .removeClass(this.classNameActive)
-                    .attr('title', this.titles.normal)
-                    .text(this.titles.normal);
+            if (this.element.hasClass(this.classNameActive)) {
+                this.normalView();
 
                 if ($.isFunction(this.stateCallbacks.normal)) {
                     this.stateCallbacks.normal.call(this);
                 }
             } else {
-                el
-                    .addClass(this.classNameActive)
-                    .attr('title', this.titles.active)
-                    .text(this.titles.active);
+                this.activeView();
 
                 if ($.isFunction(this.stateCallbacks.active)) {
                     this.stateCallbacks.active.call(this);
                 }
             }
+        },
+        normalView: function () {
+            var el = this.element,
+                title = s2js.i18n.t(this.titles.normal);
+
+            el
+                .removeClass(this.classNameActive)
+                .attr('title', title)
+                .text(title);
+        },
+        activeView: function () {
+            var el = this.element,
+                title = s2js.i18n.t(this.titles.active);
+
+            el
+                .addClass(this.classNameActive)
+                .attr('title', title)
+                .text(title);
+
         }
     });
+
+
+    s2js.Slider = s2js.Component.extend({
+        className: '',
+        classNameDefault: 's2js-slider',
+        stateCallbacks: {
+            dragStart: null,
+            dragMove: null,
+            dragEnd: null
+        },
+        position: {
+            x: 0,
+            y: 0
+        },
+        initialize: function (player, media) {
+            this.player = player;
+            this.media = media;
+            this.element = this.build.apply(this, arguments);
+
+            this.slider.on({
+                'mousedown': this.onMousedownHandler.bind(this),
+                'mouseup': this.onMouseupHandler.bind(this)
+            });
+        },
+        build: function (player, media) {
+            var container = player.element,
+                sliderContainer = $('<div class="s2js-slider-container"></div>'),
+                slider = $('<a href="#"></a>'),
+                title = s2js.i18n.t('slider');
+
+            slider
+                .attr({
+                    role: 'slider',
+                    title: title
+                })
+                .addClass([this.classNameDefault, this.className].join(' '))
+                .appendTo(sliderContainer);
+
+            sliderContainer
+                .appendTo(container);
+
+            this.slider = slider;
+
+            return sliderContainer;
+        },
+        onMousedownHandler: function (event) {
+            this.slider.on('mousemove', this.onMousemoveHandler.bind(this));
+
+            var offset = this.slider.offset(),
+                position = this.getPosition();
+
+
+                this.offset = {
+                    x: event.pageX - offset.left + position.x,
+                    y: event.pageY - offset.top + position.y
+                };
+
+            event.preventDefault();
+        },
+        onMousemoveHandler: function (event) {
+            var offset = this.slider.offset(),
+                position = this.getPosition(),
+                pos = {
+                    x: offset.left - position.x,
+                    y: offset.top - position.y
+                };
+
+            // this.slider.css({
+            //     'transform': this.translate(event.pageX, event.pageY)
+            // });
+
+            this.slider[0].style.webkitTransform = this.translate(
+                event.pageX - pos.x - this.offset.x,
+                0 //|| event.pageY - pos.y - this.offset.y
+            );
+
+            event.preventDefault();
+        },
+        onMouseupHandler: function (event) {
+            this.slider.off('mousemove');
+
+            event.preventDefault();
+        },
+        translate: function (x, y) {
+            return 'translate3d( ' + x + 'px, ' + y + 'px, 0)';
+        },
+        getPosition: function () {
+            var value = this.slider[0].style.webkitTransform.toString(),
+                pattern = /([0-9-]+)+(?![3d]\()/gi,
+                positionMatched = value.match(pattern) || [0, 0, 0];
+
+            return {
+                x: parseFloat(positionMatched[0]),
+                y: parseFloat(positionMatched[1]),
+                z: parseFloat(positionMatched[2])
+            };
+        }
+    });
+
 
     s2js.Menu = s2js.Component.extend({
         className: 's2js-menu',
@@ -227,6 +342,11 @@
             active: function () {
                 this.media.play();
             }
+        },
+        initialize: function (player, media) {
+            s2js.PlayButton.__super__.initialize.apply(this, arguments);
+            media.element.addEventListener('play', this.activeView.bind(this), false);
+            media.element.addEventListener('pause', this.normalView.bind(this), false);
         }
     });
 
@@ -243,10 +363,52 @@
             active: function () {
                 this.media.mute();
             }
+        },
+        initialize: function (player, media) {
+            s2js.PlayButton.__super__.initialize.apply(this, arguments);
+            media.element.addEventListener('volumechange', this.onVolumeChangeHandler.bind(this), false);
+        },
+        onVolumeChangeHandler: function (event) {
+            if (this.media.muted) {
+                this.activeView();
+            } else {
+                this.normalView();
+            }
+        }
+    });
+
+    s2js.VCR = s2js.Component.extend({
+        className: 's2js-vcr',
+        title: 'vcr',
+        initialize: function (player, media) {
+            this.player = player;
+            this.media = media;
+            this.element = this.build.apply(this, arguments);
+
+            media.element.addEventListener('timeupdate', this.onUpdateHandler.bind(this), false);
+        },
+        build: function (player, media) {
+            var container = player.element,
+                vcr = $('<span>00:00 / 00:00</span>');
+
+            vcr
+                .addClass(this.className)
+                .appendTo(container);
+
+            return vcr;
+        },
+        onUpdateHandler: function (event) {
+            var value = [
+                s2js.Utils.secondsToTimecode(this.media.currentTime),
+                s2js.Utils.secondsToTimecode(this.media.duration)
+            ].join(' / ');
+
+            this.element.html(value);
+            event.preventDefault();
         }
     });
 
 
-    s2js.Video.plugins = [s2js.PlayButton, s2js.MuteButton];
+    s2js.Video.plugins = [s2js.VCR, s2js.PlayButton, s2js.MuteButton, s2js.Slider];
 
 }());
