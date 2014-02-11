@@ -1,13 +1,64 @@
 ;(function (undefined) {
     window['s2js'] = window['s2js'] || {};
 
+    var getStyleProperty = function (propName) {
+        if (!propName) return;
+
+        var docElemStyle = document.documentElement.style,
+            prefixes = 'Webkit Moz ms Ms O'.split(' '),
+            prefixed;
+
+        if (typeof docElemStyle[propName] === 'string') {
+            return propName;
+        }
+
+        propName = propName.charAt(0).toUpperCase() + propName.slice(1);
+
+        for (var i=0, len = prefixes.length; i<len; i++) {
+            prefixed = prefixes[i] + propName;
+
+            if (typeof docElemStyle[prefixed] === 'string') {
+                return prefixed;
+            }
+        }
+    };
+
+    var transformProperty = getStyleProperty('transform');
+
+    var supportTransform = function (style) {
+        var el = document.createElement('div'),
+            transforms = {
+                'WebkitTransform':'-webkit-transform',
+                'OTransform':'-o-transform',
+                'MsTransform':'-ms-transform',
+                'msTransform':'-ms-transform',
+                'MozTransform':'-moz-transform',
+                'transform':'transform'
+            },
+            property = getStyleProperty('transform'),
+            t;
+
+        // Add it to the body to get the computed style
+        document.body.appendChild(el);
+        el.style[property] = style;
+        t = window.getComputedStyle(el).getPropertyValue(transforms[property]);
+        document.body.removeChild(el);
+
+        return t !== void(0) && t.length > 0 && t !== "none";
+    };
+
     s2js.API = {};
 
     s2js.playerIndex = 0;
+
     s2js.i18n = {
         t: function (s) { return s; }
     };
 
+    s2js.support = {
+        t2d: supportTransform('translate(1px, 1px)'),
+        t3d: supportTransform('translate3d(1px, 1px, 1px)'),
+    };
 
     s2js.Utils = {
         printf: function (format) {
@@ -239,7 +290,7 @@
 
             this.slider.on({
                 'mousedown': this.onMousedownHandler.bind(this),
-                'mouseup': this.onMouseupHandler.bind(this)
+                'click': false
             });
         },
         build: function (player, media) {
@@ -264,16 +315,17 @@
             return sliderContainer;
         },
         onMousedownHandler: function (event) {
-            this.slider.on('mousemove', this.onMousemoveHandler.bind(this));
+            var offset = this.slider.offset();
 
-            var offset = this.slider.offset(),
-                position = this.getPosition();
+            this.offset = {
+                x: event.pageX - offset.left,
+                y: event.pageY - offset.top,
+            };
 
-
-                this.offset = {
-                    x: event.pageX - offset.left + position.x,
-                    y: event.pageY - offset.top + position.y
-                };
+            $(document).on({
+                'mousemove.video': this.onMousemoveHandler.bind(this),
+                'mouseup': this.onMouseupHandler.bind(this)
+            });
 
             event.preventDefault();
         },
@@ -289,24 +341,26 @@
             //     'transform': this.translate(event.pageX, event.pageY)
             // });
 
-            this.slider[0].style.webkitTransform = this.translate(
+            this.slider[0].style[transformProperty] = this.translate(
                 event.pageX - pos.x - this.offset.x,
-                0 //|| event.pageY - pos.y - this.offset.y
+                0 //event.pageY - pos.y - this.offset.y
             );
 
             event.preventDefault();
         },
         onMouseupHandler: function (event) {
-            this.slider.off('mousemove');
+            $(document).off('mousemove.video');
 
             event.preventDefault();
         },
         translate: function (x, y) {
-            return 'translate3d( ' + x + 'px, ' + y + 'px, 0)';
+            return s2js.support.t3d ?
+                'translate3d( ' + x + 'px, ' + y + 'px, 0)' :
+                'translate( ' + x + 'px, ' + y + 'px)';
         },
         getPosition: function () {
             var value = this.slider[0].style.webkitTransform.toString(),
-                pattern = /([0-9-]+)+(?![3d]\()/gi,
+                pattern = /([0-9-]+)+(?![3d]?\()/gi,
                 positionMatched = value.match(pattern) || [0, 0, 0];
 
             return {
