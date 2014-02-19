@@ -118,6 +118,15 @@
                 el.fireEvent('on' + event.eventType, event);
             }
         },
+        round: function (value, precision) {
+            if (typeof precision === 'undefined') {
+                precision = 1;
+            }
+
+            d = Math.pow(10, precision);
+
+            return Math.round(value * d) / d;
+        }
     };
 
     s2js.Video = function (type, element, options) {
@@ -135,7 +144,7 @@
             }
 
             this.media = new s2js.API[type](videoHolder, options);
-            this.initializePlugins();
+            this.initializeComponents();
             s2js.playerIndex += 1;
 
             return this.media;
@@ -151,47 +160,51 @@
             return videoHolder;
         },
 
-        initializePlugins: function () {
+        initializeComponents: function () {
             var player = this,
                 media = this.media;
 
-            $.each(s2js.Video.plugins, function(index, plugin) {
-                if (typeof plugin === "function") {
-                    new plugin(player, media);
+            $.each(s2js.Video.plugins, function(index, Component) {
+                if (typeof Component === "function") {
+                    new Component(player, media);
                 } else {
-                    throw new TypeError('Plugin has incorrect type.');
+                    throw new TypeError('Component has incorrect type.');
                 }
             });
         }
     };
 
+    s2js.Component = function () {};
 
-    s2js.Component = {
-        extend: function (protoProps, staticProps) {
-            var Parent = this,
-                Child;
+    s2js.Component.extend = function (protoProps, staticProps) {
+        var Parent = this,
+            Child;
 
-            if ($.isFunction(protoProps['initialize'])) {
-                Child = protoProps['initialize'];
-            } else {
-                Child = function () { return Parent.apply(this, arguments); };
-            }
-
-            $.extend(Child, Parent, staticProps);
-
-            // inherit
-            var F = function () {};
-            F.prototype = Parent.prototype;
-            Child.prototype = new F();
-            Child.constructor = Parent;
-            Child.__super__ = Parent.prototype;
-
-            if (protoProps) {
-                $.extend(Child.prototype, protoProps);
-            }
-
-            return Child;
+        if ($.isFunction(protoProps['_constructor'])) {
+            Child = function () {
+                protoProps['_constructor'].apply(this, arguments);
+                if ($.isFunction(this['initialize'])) {
+                    this['initialize'].apply(this, arguments);
+                }
+            };
+        } else {
+            Child = function () { return Parent.apply(this, arguments); };
         }
+
+        $.extend(Child, Parent, staticProps);
+
+        // inherit
+        var F = function () {};
+        F.prototype = Parent.prototype;
+        Child.prototype = new F();
+        Child.constructor = Parent;
+        Child.__super__ = Parent.prototype;
+
+        if (protoProps) {
+            $.extend(Child.prototype, protoProps);
+        }
+
+        return Child;
     };
 
     s2js.Button = s2js.Component.extend({
@@ -206,7 +219,7 @@
             normal: null,
             active: null
         },
-        initialize: function (player, media) {
+        _constructor: function (player, media) {
             this.player = player;
             this.media = media;
             this.element = this.build.apply(this, arguments);
@@ -219,12 +232,12 @@
                 title = s2js.i18n.t(this.titles.normal);
 
             button
+                .addClass([this.classNameDefault, this.className].join(' '))
+                .text(title)
                 .attr({
                     role: 'button',
                     title: title
                 })
-                .addClass([this.classNameDefault, this.className].join(' '))
-                .text(title)
                 .appendTo(container);
 
             return button;
@@ -274,29 +287,36 @@
     s2js.Slider = s2js.Component.extend({
         className: '',
         classNameDefault: 's2js-slider',
-        stateCallbacks: {
-            dragStart: null,
-            dragMove: null,
-            dragEnd: null
+        callbacks: {
+            start: null,
+            slide: null,
+            stop: null
         },
-        position: {
-            x: 0,
-            y: 0
-        },
-        initialize: function (player, media) {
+        axis: 'x',
+        max: 100,
+        _position: 0,
+        _constructor: function (player, media) {
             this.player = player;
             this.media = media;
             this.element = this.build.apply(this, arguments);
+            this._styleName = this.axis === 'y' ? 'top' : 'left';
 
             this.slider.on({
                 'mousedown': this.onMousedownHandler.bind(this),
                 'click': false
             });
+            this.element.on({
+                'click': this.onClickHandler.bind(this),
+            });
+
+            $(window).resize(this.getSizes.bind(this));
+            this.getSizes();
         },
         build: function (player, media) {
             var container = player.element,
                 sliderContainer = $('<div class="s2js-slider-container"></div>'),
                 slider = $('<a href="#"></a>'),
+                range = $('<div class="s2js-slider-range"></div>'),
                 title = s2js.i18n.t('slider');
 
             slider
@@ -308,73 +328,115 @@
                 .appendTo(sliderContainer);
 
             sliderContainer
+                .prepend(range)
                 .appendTo(container);
 
             this.slider = slider;
+            this.range = range;
 
             return sliderContainer;
         },
         onMousedownHandler: function (event) {
             var offset = this.slider.offset();
 
-            this.offset = {
-                x: event.pageX - offset.left,
-                y: event.pageY - offset.top,
-            };
+            this.offset = this.axis === 'y' ?
+                event.pageY - offset[this._styleName] :
+                event.pageX - offset[this._styleName];
 
             $(document).on({
                 'mousemove.video': this.onMousemoveHandler.bind(this),
                 'mouseup': this.onMouseupHandler.bind(this)
             });
 
+            if ($.isFunction(this.callbacks.start)) {
+                this.callbacks.start.call(this, this.getPosition());
+            }
+
             event.preventDefault();
         },
         onMousemoveHandler: function (event) {
-            var offset = this.slider.offset(),
-                position = this.getPosition(),
-                pos = {
-                    x: offset.left - position.x,
-                    y: offset.top - position.y
-                };
+            var k = this.getCoeff(),
+                coord = this.axis === 'y' ? event.pageY : event.pageX,
+                position = (coord - this.offset - this.sizes.offset) * k; // px -> %
 
-            // this.slider.css({
-            //     'transform': this.translate(event.pageX, event.pageY)
-            // });
+            position = Math.min(position, 100);
+            position = Math.max(position, 0);
 
-            this.slider[0].style[transformProperty] = this.translate(
-                event.pageX - pos.x - this.offset.x,
-                0 //event.pageY - pos.y - this.offset.y
-            );
+            this.setPosition(position);
+
+            if ($.isFunction(this.callbacks.slide)) {
+                this.callbacks.slide.call(this, position);
+            }
 
             event.preventDefault();
         },
         onMouseupHandler: function (event) {
             $(document).off('mousemove.video');
 
+            if ($.isFunction(this.callbacks.end)) {
+                this.callbacks.end.call(this, this.getPosition());
+            }
+
             event.preventDefault();
         },
-        translate: function (x, y) {
-            return s2js.support.t3d ?
-                'translate3d( ' + x + 'px, ' + y + 'px, 0)' :
-                'translate( ' + x + 'px, ' + y + 'px)';
+        onClickHandler: function (event) {
+            var k = this.getCoeff(),
+                pagePos = this.axis === 'y' ? event.pageY : event.pageX,
+                pos = (pagePos - this.sizes.offset) * k; // px -> %
+
+            this.setPosition(pos);
+
+            if ($.isFunction(this.callbacks.slide)) {
+                this.callbacks.slide.call(this, pos);
+            }
+
+            event.preventDefault();
+        },
+        getCoeff: function () {
+            return 100/this.sizes.size;
         },
         getPosition: function () {
-            var value = this.slider[0].style.webkitTransform.toString(),
-                pattern = /([0-9-]+)+(?![3d]?\()/gi,
-                positionMatched = value.match(pattern) || [0, 0, 0];
+            return this._position;
+        },
+        setPosition: function (position) {
+            var slider = this.slider[0],
+                range = this.range[0],
+                styleName = this._styleName;
 
-            return {
-                x: parseFloat(positionMatched[0]),
-                y: parseFloat(positionMatched[1]),
-                z: parseFloat(positionMatched[2])
+            position = s2js.Utils.round(position, 2);
+
+            setTimeout(function () {
+                slider.style[styleName] = position + '%';
+                range.style[this.axis === 'y' ? 'height' : 'width'] = position + '%';
+            }, 0);
+            this._position = position;
+        },
+        getValue: function () {
+            return s2js.Utils.round(this.getPosition() * this.max / 100, 2);
+        },
+        setValue: function (value) {
+            var position = 100 * value / this.max;
+
+            this.setPosition(position);
+        },
+        getSizes: function () {
+            var el = this.element,
+                isAxisY = this.axis === 'y';
+
+            this.sizes = {
+                size: isAxisY ? el.height() : el.width(),
+                offset: isAxisY ? el.offset().top : el.offset().left
             };
+        },
+        setMaxValue: function (value) {
+            this.max = value;
         }
     });
 
 
     s2js.Menu = s2js.Component.extend({
         className: 's2js-menu',
-        initialize: function () { }
+        _constructor: function () { }
     });
 
 
@@ -398,7 +460,6 @@
             }
         },
         initialize: function (player, media) {
-            s2js.PlayButton.__super__.initialize.apply(this, arguments);
             media.element.addEventListener('play', this.activeView.bind(this), false);
             media.element.addEventListener('pause', this.normalView.bind(this), false);
         }
@@ -419,7 +480,6 @@
             }
         },
         initialize: function (player, media) {
-            s2js.PlayButton.__super__.initialize.apply(this, arguments);
             media.element.addEventListener('volumechange', this.onVolumeChangeHandler.bind(this), false);
         },
         onVolumeChangeHandler: function (event) {
@@ -434,7 +494,7 @@
     s2js.VCR = s2js.Component.extend({
         className: 's2js-vcr',
         title: 'vcr',
-        initialize: function (player, media) {
+        _constructor: function (player, media) {
             this.player = player;
             this.media = media;
             this.element = this.build.apply(this, arguments);
@@ -462,7 +522,25 @@
         }
     });
 
+    s2js.ProgressSlider = s2js.Slider.extend({
+        callbacks: {
+            start: null,
+            slide: function (position) {
+                this.media.setCurrentTime(this.getValue());
+            },
+            stop: null
+        },
+        initialize: function (player, media) {
+            media.element.addEventListener('durationchange', function () {
+                this.setMaxValue(this.media.duration);
+                this.media.setCurrentTime(this.getValue());
+            }.bind(this));
+            media.element.addEventListener('timeupdate', function () {
+                this.setValue(this.media.currentTime);
+            }.bind(this));
+        }
+    });
 
-    s2js.Video.plugins = [s2js.VCR, s2js.PlayButton, s2js.MuteButton, s2js.Slider];
+    s2js.Video.plugins = [s2js.VCR, s2js.PlayButton, s2js.MuteButton, s2js.ProgressSlider];
 
 }());
