@@ -563,7 +563,6 @@
             this.element.on('click', 'li', function (event) {
                 var index = $(event.currentTarget).index();
 
-                this.setItemByIndex(index);
                 media.setCurrentTime(this.srt._subripArray[index].start);
             }.bind(this));
         },
