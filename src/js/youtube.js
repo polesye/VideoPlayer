@@ -62,6 +62,12 @@
 
         window.onYouTubePlayerAPIReady = function () {
             build.call(null, self, element, playerVars);
+            Metadata.get(self.options.videoId, function (metadata) {
+                if (metadata.data && metadata.data.duration) {
+                    self.duration = metadata.data.duration;
+                    s2js.Utils.fireEvent(videoInstance.element, 'durationchange');
+                }
+            });
         };
 
         loadAPI();
@@ -82,10 +88,17 @@
 
             return function () {
                 if (isCalled) return;
+                isCalled = true;
 
                 self.setPlaybackRate(self.playbackRate);
                 // TODO: call `qualitychange` event 4 times.
                 self.setPlaybackQuality(self.playbackQuality);
+
+                var duration = self.media.getDuration();
+                if (videoInstance['duration'] !== duration) {
+                    videoInstance['duration'] = duration;
+                    s2js.Utils.fireEvent(videoInstance.element, 'durationchange');
+                }
             };
         } (), false);
     };
@@ -162,7 +175,6 @@
         setState('volume', Math.round(media.getVolume())/100, 'volumechange');
         setState('muted', media.isMuted(), 'volumechange');
         setState('currentTime', media.getCurrentTime(), 'timeupdate');
-        setState('duration', media.getDuration(), 'durationchange');
     };
 
     var onPlayerStateChange = function (yt, media, event) {
@@ -193,7 +205,6 @@
                         break;
                 case 5:
                         s2js.Utils.fireEvent(media, 'loadstart');
-                        console.log('cue');
                         break;
             }
         }

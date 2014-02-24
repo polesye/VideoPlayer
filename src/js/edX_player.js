@@ -500,6 +500,7 @@
             this.element = this.build.apply(this, arguments);
 
             media.element.addEventListener('timeupdate', this.onUpdateHandler.bind(this), false);
+            media.element.addEventListener('durationchange', this.onUpdateHandler.bind(this), false);
         },
         build: function (player, media) {
             var container = player.element,
@@ -533,7 +534,13 @@
         initialize: function (player, media) {
             media.element.addEventListener('durationchange', function () {
                 this.setMaxValue(this.media.duration);
-                this.media.setCurrentTime(this.getValue());
+
+
+                // this.media.setCurrentTime(this.getValue());
+
+
+
+
             }.bind(this));
             media.element.addEventListener('timeupdate', function () {
                 this.setValue(this.media.currentTime);

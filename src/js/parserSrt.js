@@ -72,22 +72,58 @@
             var arr = this._subripArray,
                 min = 0,
                 max = arr.length - 1,
-                mid;
+                mid, start, end;
 
-            while (max >= min) {
-                mid = Math.floor(min + (max - min)/2);
-                if (arr[mid].start > seconds) {
+            var i = 0;
+            loop:
+            while (min < max) {
+                if (++i > 2000) {
+                    break loop;
+                }
+
+                mid = Math.ceil((max + min)/2);
+                start = arr[mid].start;
+                end = arr[mid].end;
+
+
+// //=====//=====//=====//
+// 0      10     12     15
+
+// //=====//   //=====//=====//
+// 0      10   12     15     18
+
+
+
+
+
+
+
+
+// =====================================/
+                // if (start <= seconds && seconds < end) {
+                //     return arr[mid];
+                // }
+
+                // if (start < seconds) {
+                //     min = mid + 1;
+                // } else {
+                //     max = mid - 1;
+                // }
+// =====================================/
+                if (start > seconds) {
                     max = mid;
-                } else if (arr[mid].end < seconds) {
+                } else if (end < seconds) {
                     min = mid;
-                } else if (arr[mid].start < seconds && arr[mid].end > seconds) {
+                } else if (start <= seconds && end >= seconds) {
                     console.timeEnd('search');
                     return arr[mid];
                 } else {
                     console.timeEnd('search');
                     return void(0);
                 }
+
             }
+
             console.timeEnd('search');
             return void(0);
         },
