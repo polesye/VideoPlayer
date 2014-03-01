@@ -4,25 +4,63 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     uglify: {
-      options: {
-        banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
-      },
       build: {
-        src: 'src/**/*.js',
-        dest: 'build/<%= pkg.name %>.min.js'
+        options: {
+          mangle: false
+        },
+        files: {
+          'build/<%= pkg.name %>.min.js': [
+            'lib/1.7.2.jquery.min.js',
+            'src/js/player.js',
+            'src/js/utils.js',
+            'src/js/media/html5.js',
+            'src/js/media/youtube.js',
+            'src/js/parsers/srt.js',
+            'src/js/metadata.js',
+            'src/js/components/component.js',
+            'src/js/components/button.js',
+            'src/js/components/slider.js',
+            'src/js/components/menu.js',
+            'src/js/controls/vcr.js',
+            'src/js/controls/progress_slider.js',
+            'src/js/controls/play_button.js',
+            'src/js/controls/mute_button.js',
+            'src/js/controls/transcripts.js'
+          ]
+        }
       }
     },
     watch: {
       pivotal : {
         files: ['src/**/*.js', 'specs/**/*.js'],
-        tasks: ['jasmine', 'uglify'] // , 'jshint'
+        tasks: ['uglify', 'jasmine']
       }
     },
     jasmine: {
       pivotal: {
-        src: 'src/**/*.js',
+        src: [
+          'lib/**/*.js',
+
+          'src/js/player.js',
+          'src/js/utils.js',
+          'src/js/media/html5.js',
+          'src/js/media/youtube.js',
+          'src/js/parsers/srt.js',
+          'src/js/metadata.js',
+          'src/js/components/component.js',
+          'src/js/components/button.js',
+          'src/js/components/slider.js',
+          'src/js/components/menu.js',
+          'src/js/controls/vcr.js',
+          'src/js/controls/progress_slider.js',
+          'src/js/controls/play_button.js',
+          'src/js/controls/mute_button.js',
+          'src/js/controls/transcripts.js'
+
+        // 'build/**/*.js'
+        ],
         options: {
-          specs: 'specs/**/*.js',
+          specs: 'specs/**/*.js'
           // helpers: 'specs/**/*_helper.js',
         }
       }
@@ -54,17 +92,13 @@ module.exports = function(grunt) {
     // }
 
   grunt.loadNpmTasks('grunt-contrib-uglify');
-  // https://npmjs.org/package/grunt-contrib-jshint
-  // grunt.loadNpmTasks('grunt-contrib-jshint');
-  // https://npmjs.org/package/grunt-contrib-jasmine
   grunt.loadNpmTasks('grunt-contrib-jasmine');
-    // https://npmjs.org/package/grunt-contrib-watch
   grunt.loadNpmTasks('grunt-contrib-watch');
   // grunt.loadNpmTasks('grunt-contrib-concat');
 
   // Default task(s).
   grunt.registerTask('default', [
-    'uglify', 'watch', 'jasmine'//, 'jshint'
+    'uglify', 'watch', 'jasmine'
   ]);
 
 };

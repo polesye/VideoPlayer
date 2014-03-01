@@ -1,10 +1,10 @@
 describe('HTML5Video:', function () {
-
     var getPlayer = function (container, options) {
         var html5;
 
         if (!container) {
-            container = $(document.documentElement);
+            container = $('<div class="video-container" />')
+                            .appendTo(document.body);
         }
         if (!options) {
             options = {
@@ -12,7 +12,7 @@ describe('HTML5Video:', function () {
             };
         }
 
-        player = new s2js.API['HTML5'](container, options);
+        player = new s2js.Video('HTML5', container, options);
         player.media = jasmine.createSpyObj('video', ['play', 'pause']);
 
         return player;

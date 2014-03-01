@@ -12,12 +12,12 @@
 
 ;(function (global, undefined) {
     "use strict";
-    var HTML5 = function (container, options) {
+    s2js.API.HTML5 = function (container, options) {
 
         this.initialize.apply(this, arguments);
     };
 
-    HTML5.prototype = {
+    s2js.API.HTML5.prototype = {
 
         initialize: function (container, config) {
             var self = this,
@@ -145,5 +145,4 @@
         }
     };
 
-    s2js.API['HTML5'] = HTML5;
 }(this));

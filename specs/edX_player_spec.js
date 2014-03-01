@@ -1,4 +1,4 @@
-describe('s2js player:', function () {
+xdescribe('s2js player:', function () {
 
     var getPlayer = function (type, container, options) {
         var html5;

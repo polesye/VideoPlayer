@@ -4,9 +4,9 @@
  */
 
 exports.index = function(req, res){
-    // res.send(204);
+    // res.send(500);
     res.jsonp({a: 'b'});
     // setTimeout(function () {
     //     res.jsonp({a: 'b'});
-    // }, 1000);
+    // }, 10000);
 };

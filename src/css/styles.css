@@ -1,0 +1,48 @@
+.video-holder {
+    display: block;
+}
+.s2js-button {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 10px 2px;
+    border: 1px solid #000;
+    text-decoration: none;
+    color: #000;
+}
+.s2js-button-active {
+    border-color: red;
+    color: red;
+}
+.s2js-slider-container{
+    height: 20px;
+    outline: 1px solid #000;
+    position: relative;
+}
+.s2js-slider-range{
+    background: red;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+}
+.s2js-slider{
+    display: inline-block;
+    background: orange;
+    width: 20px;
+    height: 20px;
+    margin-left: -11px;
+    position: absolute;
+}
+.s2js-transcripts{
+    list-style: none;
+}
+.s2js-transcripts-item{
+    cursor: pointer;
+}
+.s2js-transcripts-item:hover{
+    color: orange;
+}
+.s2js-transcripts-item-active{
+    font-weight: 700;
+    color: green;
+}

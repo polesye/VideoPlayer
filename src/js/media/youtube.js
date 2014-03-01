@@ -211,11 +211,11 @@
     };
 
 
-    var Youtube = function (element, options) {
+    s2js.API.Youtube = function (element, options) {
         initialize.apply(self, Array.prototype.concat.apply(this, arguments));
     };
 
-    Youtube.prototype = {
+    s2js.API.Youtube.prototype = {
         destroy: function () {
             if (this.media) {
                 this.element.destroy();
@@ -290,6 +290,4 @@
             }
         }
     };
-
-    s2js.API['Youtube'] = Youtube;
 }(this));

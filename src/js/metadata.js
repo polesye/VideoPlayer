@@ -69,7 +69,6 @@
         document.body.removeChild(script);
     };
 
-
     var Metadata = {
         get: function (videoId, success, error) {
             var url = [
