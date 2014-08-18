@@ -1,10 +1,13 @@
 ;(function () {
-    "use strict";
-
+    'use strict';
     window.jsonpCallbacks = window.jsonpCallbacks || {};
-
+    debug('error', jsonpCallbacks);
+    // params:
+    // timeout - waiting time;
+    // success - callback for successful case;
+    // error - callback for error case.
     var jsonp = function (url, options) {
-        console.time('jsonp');
+        timeStart('jsonp');
         var config = $.extend({
                 timeout: null,
                 success: null,
@@ -12,8 +15,7 @@
             }, options),
             script = document.createElement('script'),
             callback = 'callback_' + Math.random().toString(32).slice(2),
-            isSuccess = false,
-            timer;
+            isSuccessfulRequest = false, timer;
 
         url += url.indexOf('?') === -1 ? '?' : '&';
         url += 'callback=jsonpCallbacks.' + callback;
@@ -24,29 +26,26 @@
 
         var handleError = function () {
             removeCallback();
-
             if (config.error) {
                 config.error(url);
             }
-            console.timeEnd('jsonp');
+            timeEnd('jsonp');
         };
 
         var handleRequest = function () {
-            if (!isSuccess) {
+            if (!isSuccessfulRequest) {
                 handleError();
             }
         };
 
-        jsonpCallbacks[callback] = function(data) {
+        window.jsonpCallbacks[callback] = function(data) {
             clearTimeout(timer);
             removeCallback();
-
-            isSuccess = true;
-
+            isSuccessfulRequest = true;
             if (config.success) {
                 config.success(data);
             }
-            console.timeEnd('jsonp');
+            timeEnd('jsonp');
         };
 
         if (config.timeout) {
@@ -56,7 +55,7 @@
         }
 
         script.onreadystatechange = function() {
-            if (script.readyState === 'complete' || script.readyState === 'loaded'){
+            if (script.readyState === 'complete' || script.readyState === 'loaded') {
                 script.onreadystatechange = null;
                 setTimeout(handleRequest, 0);
             }
@@ -70,12 +69,14 @@
     };
 
     var Metadata = {
+        url: function (videoId) {
+            return [
+                'https://gdata.youtube.com/feeds/api/videos/', videoId, '?v=2&alt=jsonc'
+            ].join('');
+        },
+
         get: function (videoId, success, error) {
-            var url = [
-                    'https://gdata.youtube.com/feeds/api/videos/',
-                    videoId,
-                    '?v=2&alt=jsonc'
-                ].join('');
+            var url = this.url(videoId);
             // var url = 'http://127.0.0.1:3000';
             jsonp(url, {
                 timeout: 2000,
@@ -85,5 +86,6 @@
         }
     };
 
-    window['Metadata'] = Metadata;
+    // Try to avoid this.
+    window.Metadata = Metadata;
 }());

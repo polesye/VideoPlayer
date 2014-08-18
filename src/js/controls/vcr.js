@@ -1,3 +1,4 @@
+'use strict';
 s2js.VCR = s2js.Component.extend({
     className: 's2js-vcr',
     title: 'vcr',
@@ -9,16 +10,17 @@ s2js.VCR = s2js.Component.extend({
         media.element.addEventListener('timeupdate', this.onUpdateHandler.bind(this), false);
         media.element.addEventListener('durationchange', this.onUpdateHandler.bind(this), false);
     },
+
     build: function (player, media) {
         var container = player.element,
-            vcr = $('<span>00:00 / 00:00</span>');
+            vcr = $('<span />', {
+                'class': this.className,
+                'text': '00:00 / 00:00'
+            });
 
-        vcr
-            .addClass(this.className)
-            .appendTo(container);
-
-        return vcr;
+        return vcr.appendTo(container);
     },
+
     onUpdateHandler: function (event) {
         var value = [
             s2js.Utils.secondsToTimecode(this.media.currentTime),

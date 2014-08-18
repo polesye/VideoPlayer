@@ -11,14 +11,12 @@
 // cued (5) event.
 
 ;(function (global, undefined) {
-    "use strict";
+    'use strict';
     s2js.API.HTML5 = function (container, options) {
-
         this.initialize.apply(this, arguments);
     };
 
     s2js.API.HTML5.prototype = {
-
         initialize: function (container, config) {
             var self = this,
                 defaults = {
@@ -42,11 +40,12 @@
                     // {boolean} Gets or sets if the media is muted.
                     muted: false,
                     height: 240,
-                    width: 400,
+                    width: 400
                 },
                 options = $.extend({}, config),
                 properties = {};
 
+            // @TODO Refactor this.
             $.each(config, function (key, value) {
                 if (key in defaultProperties) {
                     properties[key] = value;
@@ -64,30 +63,28 @@
             }, defaultProperties, properties);
 
             this.build.call(this, container);
-
-            $.each(properties, function(property, value) {
-                self.media[property] = value;
-            });
+            this.applyDefaults(this.media, properties);
 
             return this;
         },
+
+        applyDefaults: function (media, properties) {
+            $.each(properties, function(property, value) {
+                media[property] = value;
+            });
+        },
+
         build: function (container) {
-            var self = this,
-                media = document.createElement('video'),
+            var media = document.createElement('video'),
+                // @TODO: i18n?
                 text = document.createTextNode('Your user agent does not support the HTML5 Video element.'),
                 sourcesFragment = document.createDocumentFragment();
 
             // Generate sources.
             $.each(this.options.sources, function(index, src) {
-                var type = self.getVideoType(src),
-                    source;
-
-                if (type) {
-                    source = document.createElement('source');
-                    source.src = src + '?' + (new Date()).getTime();
-                    source.type = self.getVideoType(src);
-                    sourcesFragment.appendChild(source);
-                }
+                var source = document.createElement('source');
+                source.src = src + '?' + (new Date()).getTime();
+                sourcesFragment.appendChild(source);
             });
 
             sourcesFragment.appendChild(text);
@@ -95,53 +92,51 @@
 
             // Append video element to the DOM.
             container.append(media);
-
             this.media = this.element = media;
-
             return this.media;
         },
+
         destroy: function () {
             $(this.element).remove();
-
             return this;
         },
+
         play: function () {
             this.media.play();
-
             this.paused = false;
         },
+
         pause: function () {
             this.media.pause();
-
             this.paused = true;
         },
+
         mute: function () {
             this.media.muted = this.muted = true;
         },
+
         unMute: function () {
             this.media.muted = this.muted = false;
         },
+
         setCurrentTime: function (seconds) {
             this.media.currentTime = this.currentTime = seconds;
         },
+
         setVolume: function (volume) {
             this.media.volume = this.volume = volume;
         },
+
         setPlaybackRate: function (suggestedRate) {
             this.media.playbackRate = this.playbackRate = suggestedRate;
         },
+
         getAvailablePlaybackRates: function () {
             return [0.5, 1.0, 1.5, 2.0];
         },
+
         getPlayerState: function () {
             return this.state;
-        },
-        getVideoType: function (src) {
-            var url = src.split('?')[0],
-                ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase(),
-                formats = ['mp4', 'webm', 'ogv'];
-
-            return $.inArray(ext, formats) !== -1 ? 'video/' + ext : null;
         }
     };
 

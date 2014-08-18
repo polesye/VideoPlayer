@@ -3,8 +3,7 @@ describe('HTML5Video:', function () {
         var html5;
 
         if (!container) {
-            container = $('<div class="video-container" />')
-                            .appendTo(document.body);
+            container = $('<div />', {'class': 'video-container'}).appendTo(document.body);
         }
         if (!options) {
             options = {

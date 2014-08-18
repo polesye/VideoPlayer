@@ -1,3 +1,4 @@
+'use strict';
 s2js.Button = s2js.Component.extend({
     className: '',
     classNameDefault: 's2js-button',

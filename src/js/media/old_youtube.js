@@ -11,7 +11,7 @@
 // cued (5) event.
 
 ;(function (global, undefined) {
-    "use strict";
+    'use strict';
     var YoutubeWrapper = function (container, options) {
 
         this.initialize.apply(this, arguments);
@@ -101,7 +101,7 @@
             var tag = document.createElement('script'),
                 firstScriptTag = document.getElementsByTagName('script')[0];
 
-            tag.src = "https://www.youtube.com/player_api";
+            tag.src = 'https://www.youtube.com/player_api';
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         },
         build: function (container, playerVars) {

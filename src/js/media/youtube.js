@@ -11,7 +11,7 @@
 // cued (5) event.
 
 ;(function (global, undefined) {
-    "use strict";
+    'use strict';
     var initialize = function (videoInstance, element, config) {
         var self = videoInstance,
             defaults = {
@@ -95,8 +95,8 @@
                 self.setPlaybackQuality(self.playbackQuality);
 
                 var duration = self.media.getDuration();
-                if (videoInstance['duration'] !== duration) {
-                    videoInstance['duration'] = duration;
+                if (videoInstance.duration !== duration) {
+                    videoInstance.duration = duration;
                     s2js.Utils.fireEvent(videoInstance.element, 'durationchange');
                 }
             };
@@ -115,22 +115,22 @@
             videoId: self.options.videoId,
             playerVars: playerVars,
             events: {
-                onReady: function (e) {
+                onReady: function (event) {
                     setInterval(updateState.bind(self, self, self.media), 250);
                     s2js.Utils.fireEvent(self.element, 'canplay');
                 },
-                onPlaybackQualityChange: function (e) {
+                onPlaybackQualityChange: function (event) {
                     self.playbackQuality = self.media.getPlaybackQuality();
                     s2js.Utils.fireEvent(self.element, 'qualitychange');
                 },
-                onPlaybackRateChange: function (e) {
+                onPlaybackRateChange: function (event) {
                     self.playbackRate = self.media.getPlaybackRate();
                     s2js.Utils.fireEvent(self.element, 'ratechange');
                 },
-                onStateChange: function (e) {
-                    onPlayerStateChange(self, self.element, e);
+                onStateChange: function (event) {
+                    onPlayerStateChange(self, self.element, event);
                 },
-                onError: function (e) {
+                onError: function (event) {
                     s2js.Utils.fireEvent(self.element, 'error');
                     // 2 – The request contains an invalid parameter value.
                     // For example, this error occurs if you specify a video
@@ -147,7 +147,7 @@
 
                     // 150 – This error is the same as 101. It's just a 101
                     // error in disguise!
-                    console.log('onError', e);
+                    debug('info', 'onError' + event);
                 }
             }
         });
@@ -158,7 +158,7 @@
             var tag = document.createElement('script'),
                 firstScriptTag = document.getElementsByTagName('script')[0];
 
-            tag.src = "https://www.youtube.com/player_api";
+            tag.src = 'https://www.youtube.com/player_api';
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
             s2js.youtubeAPIisLoaded = true;
         }
@@ -212,7 +212,7 @@
 
 
     s2js.API.Youtube = function (element, options) {
-        initialize.apply(self, Array.prototype.concat.apply(this, arguments));
+        initialize.apply(this, Array.prototype.concat.apply(this, arguments));
     };
 
     s2js.API.Youtube.prototype = {
@@ -256,7 +256,7 @@
             if (this.media) {
                 volume *= 100;
                 this.media.setVolume(volume);
-                this.volume = Math.round(this.media.getVolume())/100;
+                this.volume = Math.round(this.media.getVolume()) / 100;
             }
             return this;
         },

@@ -18,10 +18,8 @@
 // <i>...</i>: italic
 // <font color=... face=...>: font attributes
 
-
-
 ;(function () {
-    "use strict";
+    'use strict';
     var SubRip = function (srt) {
         this._subripArray = this.parse(srt);
     };
@@ -32,13 +30,11 @@
         parse: function (content) {
             var lines = content.split(/\r\n|\r|\n/),
                 linesCount = lines.length,
-                entries = [],
-                i = 0, id = 0,
+                entries = [], i = 0, id = 0,
                 line, timestamp, text;
 
-            console.log('lines count:', linesCount);
-
-            console.time('parsing');
+            debug('info', 'lines count: ' + linesCount);
+            timeStart('parsing');
             for (; i < linesCount; i+=1) {
                 line = lines[i].trim();
                 timestamp = this.timestampRe.exec(line);
@@ -63,40 +59,31 @@
                     });
                 }
             }
-            console.timeEnd('parsing');
-
+            timeEnd('parsing');
             return entries;
         },
         search: function (seconds) {
-            console.time('search');
+            timeStart('search');
             var arr = this._subripArray,
                 min = 0,
                 max = arr.length - 1,
                 mid, start, end;
 
             var i = 0;
-            loop:
+            search:
             while (min < max) {
                 if (++i > 2000) {
-                    break loop;
+                    break search;
                 }
-
                 mid = Math.ceil((max + min)/2);
                 start = arr[mid].start;
                 end = arr[mid].end;
-
 
 // //=====//=====//=====//
 // 0      10     12     15
 
 // //=====//   //=====//=====//
 // 0      10   12     15     18
-
-
-
-
-
-
 
 
 // =====================================/
@@ -115,24 +102,22 @@
                 } else if (end < seconds) {
                     min = mid;
                 } else if (start <= seconds && end >= seconds) {
-                    console.timeEnd('search');
+                    timeEnd('search');
                     return arr[mid];
                 } else {
-                    console.timeEnd('search');
+                    timeEnd('search');
                     return void(0);
                 }
 
             }
-
-            console.timeEnd('search');
+            timeEnd('search');
             return void(0);
         },
-        getTextBySeconds: function (seconds) {
-            var text = this.search(seconds);
 
-            return text ? text : '';
+        getTextBySeconds: function (seconds) {
+            return this.search(seconds) || '';
         }
     };
 
-    window['SubRip'] = SubRip;
+    window.SubRip = SubRip;
 }());

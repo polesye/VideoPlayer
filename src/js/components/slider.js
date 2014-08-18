@@ -1,3 +1,4 @@
+'use strict';
 s2js.Slider = s2js.Component.extend({
     className: '',
     classNameDefault: 's2js-slider',
@@ -9,6 +10,7 @@ s2js.Slider = s2js.Component.extend({
     axis: 'x',
     max: 100,
     _position: 0,
+
     _constructor: function (player, media) {
         this.player = player;
         this.media = media;
@@ -26,11 +28,12 @@ s2js.Slider = s2js.Component.extend({
         $(window).resize(this.getSizes.bind(this));
         this.getSizes();
     },
+
     build: function (player, media) {
         var container = player.element,
-            sliderContainer = $('<div class="s2js-slider-container"></div>'),
-            slider = $('<a href="#"></a>'),
-            range = $('<div class="s2js-slider-range"></div>'),
+            sliderContainer = $('<div />', {'class': 's2js-slider-container'}),
+            slider = $('<a />', {'href': '#'}),
+            range = $('<div />', {'class': 's2js-slider-range'}),
             title = s2js.i18n.t('slider');
 
         slider
@@ -50,6 +53,7 @@ s2js.Slider = s2js.Component.extend({
 
         return sliderContainer;
     },
+
     onMousedownHandler: function (event) {
         var offset = this.slider.offset();
 
@@ -62,12 +66,13 @@ s2js.Slider = s2js.Component.extend({
             'mouseup': this.onMouseupHandler.bind(this)
         });
 
-        if ($.isFunction(this.callbacks.start)) {
+        if (s2js.Utils.isFunction(this.callbacks.start)) {
             this.callbacks.start.call(this, this.getPosition());
         }
 
         event.preventDefault();
     },
+
     onMousemoveHandler: function (event) {
         var k = this.getCoeff(),
             coord = this.axis === 'y' ? event.pageY : event.pageX,
@@ -78,21 +83,21 @@ s2js.Slider = s2js.Component.extend({
 
         this.setPosition(position);
 
-        if ($.isFunction(this.callbacks.slide)) {
+        if (s2js.Utils.isFunction(this.callbacks.slide)) {
             this.callbacks.slide.call(this, position);
         }
 
         event.preventDefault();
     },
+
     onMouseupHandler: function (event) {
         $(document).off('mousemove.video');
-
-        if ($.isFunction(this.callbacks.end)) {
+        if (s2js.Utils.isFunction(this.callbacks.end)) {
             this.callbacks.end.call(this, this.getPosition());
         }
-
         event.preventDefault();
     },
+
     onClickHandler: function (event) {
         var k = this.getCoeff(),
             pagePos = this.axis === 'y' ? event.pageY : event.pageX,
@@ -100,39 +105,42 @@ s2js.Slider = s2js.Component.extend({
 
         this.setPosition(pos);
 
-        if ($.isFunction(this.callbacks.slide)) {
+        if (s2js.Utils.isFunction(this.callbacks.slide)) {
             this.callbacks.slide.call(this, pos);
         }
 
         event.preventDefault();
     },
+
     getCoeff: function () {
         return 100/this.sizes.size;
     },
+
     getPosition: function () {
         return this._position;
     },
+
     setPosition: function (position) {
         var slider = this.slider[0],
             range = this.range[0],
             styleName = this._styleName;
 
         position = s2js.Utils.round(position, 2);
-
         setTimeout(function () {
             slider.style[styleName] = position + '%';
             range.style[this.axis === 'y' ? 'height' : 'width'] = position + '%';
         }, 0);
         this._position = position;
     },
+
     getValue: function () {
         return s2js.Utils.round(this.getPosition() * this.max / 100, 2);
     },
-    setValue: function (value) {
-        var position = 100 * value / this.max;
 
-        this.setPosition(position);
+    setValue: function (value) {
+        this.setPosition(100 * value / this.max);
     },
+
     getSizes: function () {
         var el = this.element,
             isAxisY = this.axis === 'y';
@@ -142,6 +150,7 @@ s2js.Slider = s2js.Component.extend({
             offset: isAxisY ? el.offset().top : el.offset().left
         };
     },
+
     setMaxValue: function (value) {
         this.max = value;
     }
