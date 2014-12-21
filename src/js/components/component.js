@@ -1,30 +1,37 @@
 'use strict';
-s2js.Component = function () {};
-s2js.Component.extend = function (protoProps, staticProps) {
-    var Parent = this,
-        Child = function () { return Parent.apply(this, arguments); };
+define([
+    'jquery', 'utils', 'components/component'
+], function ($, Utils, Component) {
+    var Component = function () {};
 
-    if ($.isFunction(protoProps._constructor)) {
-        Child = function () {
-            protoProps._constructor.apply(this, arguments);
-            if ($.isFunction(this.initialize)) {
-                this.initialize.apply(this, arguments);
-            }
-        };
-    }
+    Component.extend = function (protoProps, staticProps) {
+        var Parent = this,
+            Child = function () { return Parent.apply(this, arguments); };
 
-    $.extend(Child, Parent, staticProps);
+        if ($.isFunction(protoProps._constructor)) {
+            Child = function () {
+                protoProps._constructor.apply(this, arguments);
+                if ($.isFunction(this.initialize)) {
+                    this.initialize.apply(this, arguments);
+                }
+            };
+        }
 
-    // inherit
-    var F = function () {};
-    F.prototype = Parent.prototype;
-    Child.prototype = new F();
-    Child.constructor = Parent;
-    Child.__super__ = Parent.prototype;
+        $.extend(Child, Parent, staticProps);
 
-    if (protoProps) {
-        $.extend(Child.prototype, protoProps);
-    }
+        // inherit
+        var F = function () {};
+        F.prototype = Parent.prototype;
+        Child.prototype = new F();
+        Child.constructor = Parent;
+        Child.__super__ = Parent.prototype;
 
-    return Child;
-};
+        if (protoProps) {
+            $.extend(Child.prototype, protoProps);
+        }
+
+        return Child;
+    };
+
+    return Component;
+});

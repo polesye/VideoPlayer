@@ -10,13 +10,13 @@
 // When a video is cued and ready to play, the player will broadcast a video
 // cued (5) event.
 
-;(function (global, undefined) {
-    'use strict';
-    s2js.API.HTML5 = function (container, options) {
+'use strict';
+define(['jquery'], function ($) {
+    var HTML5 = function (container, options) {
         this.initialize.apply(this, arguments);
     };
 
-    s2js.API.HTML5.prototype = {
+    HTML5.prototype = {
         initialize: function (container, config) {
             var self = this,
                 defaults = {
@@ -92,12 +92,12 @@
 
             // Append video element to the DOM.
             container.append(media);
-            this.media = this.element = media;
+            this.media = media;
             return this.media;
         },
 
         destroy: function () {
-            $(this.element).remove();
+            $(this.media).remove();
             return this;
         },
 
@@ -139,5 +139,5 @@
             return this.state;
         }
     };
-
-}(this));
+    return HTML5;
+});

@@ -10,8 +10,8 @@
 // When a video is cued and ready to play, the player will broadcast a video
 // cued (5) event.
 
-;(function (global, undefined) {
-    'use strict';
+'use strict';
+define(['jquery', 'utils', 'metadata'], function ($, Utils, Metadata) {
     var initialize = function (videoInstance, element, config) {
         var self = videoInstance,
             defaults = {
@@ -65,7 +65,7 @@
             Metadata.get(self.options.videoId, function (metadata) {
                 if (metadata.data && metadata.data.duration) {
                     self.duration = metadata.data.duration;
-                    s2js.Utils.fireEvent(videoInstance.element, 'durationchange');
+                    Utils.Utils.fireEvent(videoInstance.element, 'durationchange');
                 }
             });
         };
@@ -97,7 +97,7 @@
                 var duration = self.media.getDuration();
                 if (videoInstance.duration !== duration) {
                     videoInstance.duration = duration;
-                    s2js.Utils.fireEvent(videoInstance.element, 'durationchange');
+                    Utils.Utils.fireEvent(videoInstance.element, 'durationchange');
                 }
             };
         } (), false);
@@ -107,7 +107,7 @@
         var self = videoInstance,
             elementId = element.attr('id');
 
-        s2js.Utils.fireEvent(self.element, 'loadstart');
+        Utils.Utils.fireEvent(self.element, 'loadstart');
 
         self.media = new YT.Player(elementId, {
             height: '390',
@@ -117,21 +117,21 @@
             events: {
                 onReady: function (event) {
                     setInterval(updateState.bind(self, self, self.media), 250);
-                    s2js.Utils.fireEvent(self.element, 'canplay');
+                    Utils.Utils.fireEvent(self.element, 'canplay');
                 },
                 onPlaybackQualityChange: function (event) {
                     self.playbackQuality = self.media.getPlaybackQuality();
-                    s2js.Utils.fireEvent(self.element, 'qualitychange');
+                    Utils.Utils.fireEvent(self.element, 'qualitychange');
                 },
                 onPlaybackRateChange: function (event) {
                     self.playbackRate = self.media.getPlaybackRate();
-                    s2js.Utils.fireEvent(self.element, 'ratechange');
+                    Utils.Utils.fireEvent(self.element, 'ratechange');
                 },
                 onStateChange: function (event) {
                     onPlayerStateChange(self, self.element, event);
                 },
                 onError: function (event) {
-                    s2js.Utils.fireEvent(self.element, 'error');
+                    Utils.Utils.fireEvent(self.element, 'error');
                     // 2 – The request contains an invalid parameter value.
                     // For example, this error occurs if you specify a video
                     // ID that does not have 11 characters, or if the video
@@ -147,20 +147,22 @@
 
                     // 150 – This error is the same as 101. It's just a 101
                     // error in disguise!
-                    debug('info', 'onError' + event);
+                    Utils.debug('info', 'onError' + event);
                 }
             }
         });
     };
 
+    var youtubeAPIisLoaded = false;
+
     var loadAPI = function () {
-        if (!s2js.youtubeAPIisLoaded) {
+        if (!youtubeAPIisLoaded) {
             var tag = document.createElement('script'),
                 firstScriptTag = document.getElementsByTagName('script')[0];
 
             tag.src = 'https://www.youtube.com/player_api';
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-            s2js.youtubeAPIisLoaded = true;
+            youtubeAPIisLoaded = true;
         }
     };
 
@@ -168,7 +170,7 @@
         var setState = function (propertyName, newValue, eventName) {
                 if (videoInstance[propertyName] !== newValue) {
                     videoInstance[propertyName] = newValue;
-                    s2js.Utils.fireEvent(videoInstance.element, eventName);
+                    Utils.Utils.fireEvent(videoInstance.element, eventName);
                 }
             };
 
@@ -183,111 +185,96 @@
                 case -1: // not started
                         yt.paused = true;
                         yt.ended = true;
-                        s2js.Utils.fireEvent(media, 'loadedmetadata');
-                        s2js.Utils.fireEvent(media, 'loadeddata');
+                        Utils.Utils.fireEvent(media, 'loadedmetadata');
+                        Utils.Utils.fireEvent(media, 'loadeddata');
                         break;
                 case 0:
                         yt.paused = false;
                         yt.ended = true;
-                        s2js.Utils.fireEvent(media, 'ended');
+                        Utils.Utils.fireEvent(media, 'ended');
                         break;
                 case 1:
                         yt.paused = false;
                         yt.ended = false;
-                        s2js.Utils.fireEvent(media, 'play');
-                        s2js.Utils.fireEvent(media, 'playing');
+                        Utils.Utils.fireEvent(media, 'play');
+                        Utils.Utils.fireEvent(media, 'playing');
                         break;
                 case 2:
-                        s2js.Utils.fireEvent(media, 'pause');
+                        Utils.Utils.fireEvent(media, 'pause');
                         break;
                 case 3: // buffering
-                        s2js.Utils.fireEvent(media, 'progress');
+                        Utils.Utils.fireEvent(media, 'progress');
                         break;
                 case 5:
-                        s2js.Utils.fireEvent(media, 'loadstart');
+                        Utils.Utils.fireEvent(media, 'loadstart');
                         break;
             }
         }
     };
 
 
-    s2js.API.Youtube = function (element, options) {
+    var Youtube = function (element, options) {
         initialize.apply(this, Array.prototype.concat.apply(this, arguments));
+        Utils.Utils.decorateBy(this, function (method) {
+            return function () {
+                if (this.media) {
+                    return method.apply(this, arguments);
+                }
+            };
+        });
     };
 
-    s2js.API.Youtube.prototype = {
+    Youtube.prototype = {
         destroy: function () {
-            if (this.media) {
-                this.element.destroy();
-            }
+            this.element.destroy();
             return this;
         },
         play: function () {
-            if (this.media) {
-                this.media.playVideo();
-            }
+            this.media.playVideo();
             return this;
         },
         pause: function () {
-            if (this.media) {
-                this.media.pauseVideo();
-            }
+            this.media.pauseVideo();
             return this;
         },
         mute: function () {
-            if (this.media) {
-                this.media.mute();
-            }
+            this.media.mute();
             return this;
         },
         unMute: function () {
-            if (this.media) {
-                this.media.unMute();
-            }
+            this.media.unMute();
             return this;
         },
         setCurrentTime: function (seconds) {
-            if (this.media) {
-                this.media.seekTo(seconds);
-            }
+            this.media.seekTo(seconds);
             return this;
         },
         setVolume: function (volume) {
-            if (this.media) {
-                volume *= 100;
-                this.media.setVolume(volume);
-                this.volume = Math.round(this.media.getVolume()) / 100;
-            }
+            volume *= 100;
+            this.media.setVolume(volume);
+            this.volume = Math.round(this.media.getVolume()) / 100;
             return this;
         },
         setPlaybackRate: function (suggestedRate) {
-            if (this.media) {
-                this.media.setPlaybackRate(suggestedRate);
-                this.playbackRate = this.media.getPlaybackRate();
-            }
+            this.media.setPlaybackRate(suggestedRate);
+            this.playbackRate = this.media.getPlaybackRate();
             return this;
         },
         setPlaybackQuality: function (suggestedQuality) {
-            if (this.media) {
-                this.media.setPlaybackQuality(suggestedQuality);
-                this.playbackQuality = this.media.getPlaybackQuality();
-            }
+            this.media.setPlaybackQuality(suggestedQuality);
+            this.playbackQuality = this.media.getPlaybackQuality();
             return this;
         },
         getAvailableQualityLevels: function () {
-            if (this.media) {
-                return this.media.getAvailableQualityLevels();
-            }
+            return this.media.getAvailableQualityLevels();
         },
         getAvailablePlaybackRates: function () {
-            if (this.media) {
-                return this.media.getAvailablePlaybackRates();
-            }
+            return this.media.getAvailablePlaybackRates();
         },
         getPlayerState: function () {
-            if (this.media) {
-                return this.media.getPlayerState();
-            }
+            return this.media.getPlayerState();
         }
     };
-}(this));
+
+    return Youtube;
+});

@@ -1,5 +1,11 @@
 'use strict';
-s2js.Menu = s2js.Component.extend({
-    className: 's2js-menu',
-    _constructor: function () { }
+define([
+    'jquery', 'utils', 'components/component'
+], function ($, Utils, Component) {
+    var Menu = Component.extend({
+        className: 's2js-menu',
+        _constructor: function () { }
+    });
+
+    return Menu;
 });

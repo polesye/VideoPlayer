@@ -18,7 +18,8 @@
 // <i>...</i>: italic
 // <font color=... face=...>: font attributes
 
-;(function () {
+
+define(['utils'], function (Utils) {
     'use strict';
     var SubRip = function (srt) {
         this._subripArray = this.parse(srt);
@@ -33,8 +34,8 @@
                 entries = [], i = 0, id = 0,
                 line, timestamp, text;
 
-            debug('info', 'lines count: ' + linesCount);
-            timeStart('parsing');
+            Utils.debug('info', 'lines count: ' + linesCount);
+            Utils.timeStart('parsing');
             for (; i < linesCount; i+=1) {
                 line = lines[i].trim();
                 timestamp = this.timestampRe.exec(line);
@@ -59,20 +60,21 @@
                     });
                 }
             }
-            timeEnd('parsing');
+            Utils.timeEnd('parsing');
             return entries;
         },
+
         search: function (seconds) {
-            timeStart('search');
+            Utils.timeStart('search');
             var arr = this._subripArray,
                 min = 0,
                 max = arr.length - 1,
                 mid, start, end;
 
-            var i = 0;
+            var time = Date.now();
             search:
             while (min < max) {
-                if (++i > 2000) {
+                if (Date.now() - time > 2000) {
                     break search;
                 }
                 mid = Math.ceil((max + min)/2);
@@ -102,15 +104,15 @@
                 } else if (end < seconds) {
                     min = mid;
                 } else if (start <= seconds && end >= seconds) {
-                    timeEnd('search');
+                    Utils.timeEnd('search');
                     return arr[mid];
                 } else {
-                    timeEnd('search');
+                    Utils.timeEnd('search');
                     return void(0);
                 }
 
             }
-            timeEnd('search');
+            Utils.timeEnd('search');
             return void(0);
         },
 
@@ -119,5 +121,5 @@
         }
     };
 
-    window.SubRip = SubRip;
-}());
+    return SubRip;
+};

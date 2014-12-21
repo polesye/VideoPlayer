@@ -1,13 +1,12 @@
-;(function () {
-    'use strict';
+'use strict';
+define(['jquery', 'utils'], function ($, Utils) {
     window.jsonpCallbacks = window.jsonpCallbacks || {};
-    debug('error', jsonpCallbacks);
     // params:
     // timeout - waiting time;
     // success - callback for successful case;
     // error - callback for error case.
     var jsonp = function (url, options) {
-        timeStart('jsonp');
+        Utils.timeStart('jsonp');
         var config = $.extend({
                 timeout: null,
                 success: null,
@@ -29,7 +28,7 @@
             if (config.error) {
                 config.error(url);
             }
-            timeEnd('jsonp');
+            Utils.timeEnd('jsonp');
         };
 
         var handleRequest = function () {
@@ -45,7 +44,7 @@
             if (config.success) {
                 config.success(data);
             }
-            timeEnd('jsonp');
+            Utils.timeEnd('jsonp');
         };
 
         if (config.timeout) {
@@ -86,6 +85,5 @@
         }
     };
 
-    // Try to avoid this.
-    window.Metadata = Metadata;
-}());
+    return Metadata;
+});

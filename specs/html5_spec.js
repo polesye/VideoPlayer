@@ -1,4 +1,4 @@
-describe('HTML5Video:', function () {
+xdescribe('HTML5Video:', function () {
     var getPlayer = function (container, options) {
         var html5;
 

@@ -26,22 +26,15 @@
 
 
     <!--script type="text/javascript" src="../build/VideoPlayer.min.js"></script-->
-    <script type="text/javascript" src="../lib/1.7.2.jquery.min.js"></script>
-    <script type="text/javascript" src="js/utils.js"></script>
-    <script type="text/javascript" src="js/player.js"></script>
-    <script type="text/javascript" src="js/media/html5.js"></script>
-    <script type="text/javascript" src="js/media/youtube.js"></script>
-    <script type="text/javascript" src="js/parsers/srt.js"></script>
-    <script type="text/javascript" src="js/metadata.js"></script>
-    <script type="text/javascript" src="js/components/component.js"></script>
-    <script type="text/javascript" src="js/components/button.js"></script>
-    <script type="text/javascript" src="js/components/slider.js"></script>
-    <script type="text/javascript" src="js/components/menu.js"></script>
-    <script type="text/javascript" src="js/controls/vcr.js"></script>
-    <script type="text/javascript" src="js/controls/progress_slider.js"></script>
-    <script type="text/javascript" src="js/controls/play_button.js"></script>
-    <script type="text/javascript" src="js/controls/mute_button.js"></script>
-    <script type="text/javascript" src="js/controls/transcripts.js"></script>
+    <script>
+        var requirejs = {
+            baseUrl: 'js/',
+            paths: {
+                'jquery': '../../lib/1.7.2.jquery.min'
+            }
+        }
+    </script>
+    <script src="../lib/require.js"></script>
 
 
     <script type="text/javascript">
@@ -59,7 +52,11 @@
     </script>
 
     <script type="text/javascript">
-    p = new s2js.Video('Youtube', $('#youtube-video-container'), {
+require([
+    'utils', 'player', 'controls/vcr', 'controls/play_button',
+    'controls/mute_button', 'controls/progress_slider', 'controls/transcripts'
+], function (Utils, Video, VCR, PlayButton, MuteButton, ProgressSlider, Transcripts) {
+    p = new Video('Youtube', $('#youtube-video-container'), {
         videoId: 'M7lc1UVf-VE',
         volume: 0.75,
         playbackRate: 1.0,
@@ -68,11 +65,11 @@
         loop: 1,
         muted: true,
         plugins: [
-            s2js.VCR,
-            s2js.PlayButton,
-            s2js.MuteButton,
-            s2js.ProgressSlider,
-            s2js.Transcripts
+            VCR,
+            PlayButton,
+            MuteButton,
+            ProgressSlider,
+            Transcripts
         ]
     });
 
@@ -83,15 +80,13 @@
     };
 
     d.addEventListener('timeupdate', function () {
-        $('.time').html(s2js.Utils.secondsToTimecode(p.currentTime));
+        $('.time').html(Utils.Utils.secondsToTimecode(p.currentTime));
     });
     d.addEventListener('durationchange', function () {
-        $('.duration').html(s2js.Utils.secondsToTimecode(p.duration));
+        $('.duration').html(Utils.Utils.secondsToTimecode(p.duration));
     });
     d.addEventListener('volumechange', function () {
         $('.volume').html(p.volume);
-    });
-    d.addEventListener('volumechange', function () {
         $('.mute').html(p.muted.toString());
     });
     d.addEventListener('ratechange', function () {
@@ -102,8 +97,7 @@
     });
 
 
-    [
-        'canplay', 'ratechange', 'loadedmetadata', 'loadeddata', 'durationchange',
+    ['canplay', 'ratechange', 'loadedmetadata', 'loadeddata', 'durationchange',
         'ended', 'play', 'playing', 'pause', 'progress', 'qualitychange', 'error',
         'volumechange'
     ].forEach(function (eventName) {
@@ -111,7 +105,7 @@
             updateEvent(eventName);
         }, false);
     });
-
+});
     </script>
 </body>
 </html>

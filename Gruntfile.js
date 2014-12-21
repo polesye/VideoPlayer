@@ -11,8 +11,8 @@ module.exports = function(grunt) {
         files: {
           'build/<%= pkg.name %>.min.js': [
             'lib/1.7.2.jquery.min.js',
-            'src/js/player.js',
             'src/js/utils.js',
+            'src/js/player.js',
             'src/js/media/html5.js',
             'src/js/media/youtube.js',
             'src/js/parsers/srt.js',
@@ -41,8 +41,8 @@ module.exports = function(grunt) {
         src: [
           'lib/**/*.js',
 
-          'src/js/player.js',
           'src/js/utils.js',
+          'src/js/player.js',
           'src/js/media/html5.js',
           'src/js/media/youtube.js',
           'src/js/parsers/srt.js',
