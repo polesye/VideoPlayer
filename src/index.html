@@ -54,8 +54,8 @@
     <script type="text/javascript">
 require([
     'utils', 'player', 'controls/vcr', 'controls/play_button',
-    'controls/mute_button', 'controls/progress_slider', 'controls/transcripts'
-], function (Utils, Video, VCR, PlayButton, MuteButton, ProgressSlider, Transcripts) {
+    'controls/mute_button', 'controls/progress_slider', 'controls/transcripts', 'components/menu'
+], function (Utils, Video, VCR, PlayButton, MuteButton, ProgressSlider, Transcripts, Menu) {
     p = new Video('Youtube', $('#youtube-video-container'), {
         videoId: 'M7lc1UVf-VE',
         volume: 0.75,
@@ -69,7 +69,8 @@ require([
             PlayButton,
             MuteButton,
             ProgressSlider,
-            Transcripts
+            Transcripts,
+            Menu
         ]
     });
 

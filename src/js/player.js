@@ -1,7 +1,7 @@
 'use strict';
 define([
-    'jquery', 'utils', 'media/html5', 'media/youtube'
-], function ($, Utils, HTML5, Youtube) {
+    'jquery', 'utils', 'runtime.v1', 'media/html5', 'media/youtube'
+], function ($, Utils, Runtime, HTML5, Youtube) {
     var API = {
         HTML5: HTML5,
         Youtube: Youtube
@@ -35,11 +35,11 @@ define([
         },
 
         initializeComponents: function () {
-            var player = this, media = this.media;
+            var runtime = new Runtime(this, this.media);
 
             $.each(this.options.plugins, function(index, Component) {
                 if (Utils.Utils.isFunction(Component)) {
-                    new Component(player, media);
+                    new Component(runtime);
                 } else {
                     throw new TypeError('Component has incorrect type.');
                 }

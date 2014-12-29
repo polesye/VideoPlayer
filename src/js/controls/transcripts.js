@@ -1,17 +1,18 @@
 'use strict';
 define([
-    'jquery', 'utils', 'components/component'
-], function ($, Utils, Component) {
+    'utils', 'components/component'
+], function (Utils, Component) {
     var Transcripts = Component.extend({
-        _constructor: function (player, media) {
-            this.player = player;
-            this.media = media;
+        _constructor: function (runtime) {
+            this.runtime = runtime;
+            this.player = runtime.getPlayer();
+            this.media = runtime.getMedia();
 
-            var container = player.element,
-                transcripts = this.element = $('<ol class="s2js-transcripts" />'),
+            var container = this.player.element,
+                transcripts = this.element = this.runtime.$('<ol class="s2js-transcripts" />'),
                 title = Utils.i18n.t('transcripts');
 
-            $.ajax({
+            this.runtime.$.ajax({
                 url: 'http://localhost:3000/srt',
                 success: function (response) {
                     this.build(container, response);
@@ -33,15 +34,15 @@ define([
             }.bind(this));
 
             this.element.on('click', 'li', function (event) {
-                var index = $(event.currentTarget).index();
+                var index = this.runtime.$(event.currentTarget).index();
                 this.media.setCurrentTime(this.srt._subripArray[index].start);
             }.bind(this));
         },
 
         generateItems: function (array) {
             var frag = document.createDocumentFragment();
-            $.each(array, function(index, SubRipItem) {
-                var item = $('<li />', {'class': 's2js-transcripts-item'});
+            this.runtime.$.each(array, function(index, SubRipItem) {
+                var item = this.runtime.$('<li />', {'class': 's2js-transcripts-item'});
                 item.text(SubRipItem.text);
                 frag.appendChild(item[0]);
             });

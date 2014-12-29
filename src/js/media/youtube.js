@@ -92,7 +92,7 @@ define(['jquery', 'utils', 'metadata'], function ($, Utils, Metadata) {
 
                 self.setPlaybackRate(self.playbackRate);
                 // TODO: call `qualitychange` event 4 times.
-                self.setPlaybackQuality(self.playbackQuality);
+                // self.setPlaybackQuality(self.playbackQuality);
 
                 var duration = self.media.getDuration();
                 if (videoInstance.duration !== duration) {

@@ -16,8 +16,8 @@ define(['components/button'], function (Button) {
             }
         },
 
-        initialize: function (player, media) {
-            media.element.addEventListener('volumechange', this.onVolumeChangeHandler.bind(this), false);
+        initialize: function (runtime) {
+            this.media.element.addEventListener('volumechange', this.onVolumeChangeHandler.bind(this), false);
             this.updateState();
         },
 

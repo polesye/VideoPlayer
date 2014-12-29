@@ -1,7 +1,7 @@
 'use strict';
 define([
-    'jquery', 'utils', 'components/component'
-], function ($, Utils, Component) {
+    'utils', 'components/component'
+], function (Utils, Component) {
     var Slider = Component.extend({
         className: '',
         classNameDefault: 's2js-slider',
@@ -14,10 +14,11 @@ define([
         max: 100,
         _position: 0,
 
-        _constructor: function (player, media) {
-            this.player = player;
-            this.media = media;
-            this.element = this.build.apply(this, arguments);
+        _constructor: function (runtime) {
+            this.runtime = runtime;
+            this.player = runtime.getPlayer();
+            this.media = runtime.getMedia();
+            this.element = this.build();
             this._styleName = this.axis === 'y' ? 'top' : 'left';
 
             this.slider.on({
@@ -28,15 +29,15 @@ define([
                 'click': this.onClickHandler.bind(this),
             });
 
-            $(window).resize(this.getSizes.bind(this));
+            this.runtime.$(window).resize(this.getSizes.bind(this));
             this.getSizes();
         },
 
-        build: function (player, media) {
-            var container = player.element,
-                sliderContainer = $('<div />', {'class': 's2js-slider-container'}),
-                slider = $('<a />', {'href': '#'}),
-                range = $('<div />', {'class': 's2js-slider-range'}),
+        build: function () {
+            var container = this.player.element,
+                sliderContainer = this.runtime.$('<div />', {'class': 's2js-slider-container'}),
+                slider = this.runtime.$('<a />', {'href': '#'}),
+                range = this.runtime.$('<div />', {'class': 's2js-slider-range'}),
                 title = Utils.i18n.t('slider');
 
             slider
@@ -64,7 +65,7 @@ define([
                 event.pageY - offset[this._styleName] :
                 event.pageX - offset[this._styleName];
 
-            $(document).on({
+            this.runtime.$(document).on({
                 'mousemove.video': this.onMousemoveHandler.bind(this),
                 'mouseup': this.onMouseupHandler.bind(this)
             });
@@ -94,7 +95,7 @@ define([
         },
 
         onMouseupHandler: function (event) {
-            $(document).off('mousemove.video');
+            this.runtime.$(document).off('mousemove.video');
             if (Utils.Utils.isFunction(this.callbacks.end)) {
                 this.callbacks.end.call(this, this.getPosition());
             }

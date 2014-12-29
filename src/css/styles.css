@@ -46,3 +46,6 @@
     font-weight: 700;
     color: green;
 }
+.is-active, .is-active a {
+    color: red;
+}

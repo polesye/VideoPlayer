@@ -1,22 +1,23 @@
 'use strict';
 define([
-    'jquery', 'utils', 'components/component'
-], function ($, Utils, Component) {
+    'utils', 'components/component'
+], function (Utils, Component) {
     var VCR = Component.extend({
         className: 's2js-vcr',
         title: 'vcr',
-        _constructor: function (player, media) {
-            this.player = player;
-            this.media = media;
-            this.element = this.build.apply(this, arguments);
+        _constructor: function (runtime) {
+            this.runtime = runtime;
+            this.player = runtime.getPlayer();
+            this.media = runtime.getMedia();
+            this.element = this.build();
 
-            media.element.addEventListener('timeupdate', this.onUpdateHandler.bind(this), false);
-            media.element.addEventListener('durationchange', this.onUpdateHandler.bind(this), false);
+            this.media.element.addEventListener('timeupdate', this.onUpdateHandler.bind(this), false);
+            this.media.element.addEventListener('durationchange', this.onUpdateHandler.bind(this), false);
         },
 
-        build: function (player, media) {
-            var container = player.element,
-                vcr = $('<span />', {
+        build: function (runtime) {
+            var container = this.player.element,
+                vcr = this.runtime.$('<span />', {
                     'class': this.className,
                     'text': '00:00 / 00:00'
                 });

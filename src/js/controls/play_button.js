@@ -16,9 +16,9 @@ define(['components/button'], function (Button) {
             }
         },
 
-        initialize: function (player, media) {
-            media.element.addEventListener('play', this.activeView.bind(this), false);
-            media.element.addEventListener('pause', this.normalView.bind(this), false);
+        initialize: function (runtime) {
+            this.media.element.addEventListener('play', this.activeView.bind(this), false);
+            this.media.element.addEventListener('pause', this.normalView.bind(this), false);
         }
     });
 

@@ -1,7 +1,7 @@
 'use strict';
 define([
-    'jquery', 'utils', 'components/component'
-], function ($, Utils, Component) {
+    'utils', 'components/component'
+], function (Utils, Component) {
     var Button = Component.extend({
         className: '',
         classNameDefault: 's2js-button',
@@ -14,15 +14,16 @@ define([
             normal: null,
             active: null
         },
-        _constructor: function (player, media) {
-            this.player = player;
-            this.media = media;
-            this.element = this.build.apply(this, arguments);
+        _constructor: function (runtime) {
+            this.runtime = runtime;
+            this.player = runtime.getPlayer();
+            this.media = runtime.getMedia();
+            this.element = this.build();
             this.element.on('click', this.onClickHandler.bind(this));
         },
-        build: function (player, media) {
-            var container = player.element,
-                button = $('<a href="#"></a>'),
+        build: function () {
+            var container = this.player.element,
+                button = this.runtime.$('<a href="#"></a>'),
                 title = Utils.i18n.t(this.titles.normal);
 
             button
@@ -44,13 +45,13 @@ define([
             if (this.element.hasClass(this.classNameActive)) {
                 this.normalView();
 
-                if ($.isFunction(this.stateCallbacks.normal)) {
+                if (this.runtime.$.isFunction(this.stateCallbacks.normal)) {
                     this.stateCallbacks.normal.call(this);
                 }
             } else {
                 this.activeView();
 
-                if ($.isFunction(this.stateCallbacks.active)) {
+                if (this.runtime.$.isFunction(this.stateCallbacks.active)) {
                     this.stateCallbacks.active.call(this);
                 }
             }
