@@ -73,24 +73,6 @@ module.exports = function(grunt) {
     }
   });
 
-    // {jshint: {
-    //   files: ['Gruntfile.js', 'lib/**/*.js', 'test/**/*.js', 'src/**/*.js'],
-    //   beforeconcat: ['src/**/*.js'],
-    //   afterconcat: ['dist/*.js'],
-    //   options: {
-    //     curly: true,
-    //     eqeqeq: true,
-    //     eqnull: true,
-    //     browser: true,
-    //     globals: {
-    //       jQuery: true,
-    //       console: true,
-    //       module: true,
-    //       document: true
-    //     },
-    //   },
-    // }
-
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-watch');

@@ -81,24 +81,6 @@ define(['utils'], function (Utils) {
                 start = arr[mid].start;
                 end = arr[mid].end;
 
-// //=====//=====//=====//
-// 0      10     12     15
-
-// //=====//   //=====//=====//
-// 0      10   12     15     18
-
-
-// =====================================/
-                // if (start <= seconds && seconds < end) {
-                //     return arr[mid];
-                // }
-
-                // if (start < seconds) {
-                //     min = mid + 1;
-                // } else {
-                //     max = mid - 1;
-                // }
-// =====================================/
                 if (start > seconds) {
                     max = mid;
                 } else if (end < seconds) {

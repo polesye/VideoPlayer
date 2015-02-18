@@ -1,7 +1,7 @@
 'use strict';
 define([
-    'jquery', 'utils', 'components/component'
-], function ($, Utils, Component) {
+    'jquery', 'utils'
+], function ($, Utils) {
     var Component = function () {};
 
     Component.extend = function (protoProps, staticProps) {
